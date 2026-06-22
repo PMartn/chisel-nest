@@ -3,6 +3,7 @@ import * as path from "path";
 import { execSync } from "child_process";
 import { copySkeleton } from "./copy-skeleton";
 import { fileURLToPath } from "url";
+import { pruneDatabase } from "../tasks/prune-db";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,8 +19,7 @@ async function testGeneration() {
   await copySkeleton(sandboxDir);
 
   console.log("✂️  Applying pruning logic...");
-  // Simulate a user choosing "None" for DB
-  // await pruneDatabase(sandboxDir);
+  await pruneDatabase(sandboxDir);
 
   console.log("📦 Installing dependencies in sandbox...");
   try {

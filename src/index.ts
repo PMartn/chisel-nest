@@ -1,9 +1,12 @@
+// src/index.ts
 import inquirer from "inquirer";
+import * as path from "path";
+import { copySkeleton } from "./utils/copy-skeleton";
+import { pruneDatabase } from "./tasks/prune-db";
 
 interface GeneratorAnswers {
   projectName: string;
-  database: "PostgreSQL" | "MongoDB" | "None";
-  useAuth: boolean;
+  database: "PostgreSQL (TypeORM)" | "None";
 }
 
 async function runGenerator() {
@@ -15,20 +18,24 @@ async function runGenerator() {
       default: "my-nest-app",
     },
     {
-      type: "select",
+      type: "list",
       name: "database",
-      message: "Select a database:",
-      choices: ["PostgreSQL", "MongoDB", "None"],
-    },  
-    {
-      type: "confirm",
-      name: "useAuth",
-      message: "Include Authentication module?",
-      default: true,
+      message: "Select a database configuration:",
+      choices: ["PostgreSQL (TypeORM)", "None"],
     },
   ]);
 
-  console.log(`🚀 Scaffolding ${answers.projectName}...`);
+  const targetPath = path.join(process.cwd(), answers.projectName);
+
+  console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
+
+  await copySkeleton(targetPath);
+
+  if (answers.database === "None") {
+    await pruneDatabase(targetPath);
+  }
+
+  console.log(`\n🎉 Project ${answers.projectName} configured successfully!`);
 }
 
 runGenerator();
