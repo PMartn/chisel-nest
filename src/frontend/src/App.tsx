@@ -12,14 +12,17 @@ import {
   Button,
   CircularProgress,
   Container,
+  Divider,
 } from "@mui/material";
 import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 
 export default function App() {
   const [projectName, setProjectName] = useState("my-nest-app");
-  const [database, setDatabase] = useState("None");
   const [destinationPath, setDestinationPath] = useState("");
-  const [useAuth, setUseAuth] = useState(false);
+  const [includePostgres, setIncludePostgres] = useState(false);
+  const [postgresOrm, setPostgresOrm] = useState("TypeORM");
+  const [includeMongo, setIncludeMongo] = useState(false);
+  const [mongoOrm, setMongoOrm] = useState("Mongoose");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -28,14 +31,19 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
 
-    const backendDbValue =
-      database === "PostgreSQL" ? "PostgreSQL (TypeORM)" : "None";
+    // Keep compatibility with the current backend pruning logic:
+    // If PostgreSQL with TypeORM is selected, we pass "PostgreSQL (TypeORM)".
+    // Otherwise, we pass "None".
+    const backendDbValue = (includePostgres && postgresOrm === "TypeORM") ? "PostgreSQL (TypeORM)" : "None";
 
     const payload = {
       projectName,
       database: backendDbValue,
-      useAuth,
       destinationPath: destinationPath.trim(),
+      postgresEnabled: includePostgres,
+      postgresOrm,
+      mongoEnabled: includeMongo,
+      mongoOrm,
     };
 
     try {
@@ -170,42 +178,119 @@ export default function App() {
             onSelect={(selected) => setDestinationPath(selected)}
           />
 
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="database-label" sx={{ color: "#94a3b8" }}>
-              Database
-            </InputLabel>
-            <Select
-              labelId="database-label"
-              value={database}
-              label="Database"
-              onChange={(e) => setDatabase(e.target.value)}
-              sx={{
-                color: "#fff",
-                backgroundColor: "#0f172a",
-                "& .MuiSvgIcon-root": { color: "#fff" },
-              }}
+          <Box
+            sx={{
+              border: "1px solid #334155",
+              borderRadius: 2,
+              p: 2.5,
+              bgcolor: "#0f172a",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2.5,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ color: "#818cf8", fontWeight: "bold" }}
             >
-              <MenuItem value="None">None (SQLite/In-Memory Mock)</MenuItem>
-              <MenuItem value="PostgreSQL">PostgreSQL (TypeORM)</MenuItem>
-            </Select>
-          </FormControl>
+              Database Integration
+            </Typography>
 
-          {database !== "None" && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={useAuth}
-                  onChange={(e) => setUseAuth(e.target.checked)}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={includePostgres}
+                    onChange={(e) => setIncludePostgres(e.target.checked)}
+                    sx={{ color: "#818cf8", "&.Mui-checked": { color: "#818cf8" } }}
+                  />
+                }
+                label="Include PostgreSQL Database"
+                sx={{ color: "#e2e8f0", m: 0 }}
+              />
+
+              {includePostgres && (
+                <Box
                   sx={{
-                    color: "#818cf8",
-                    "&.Mui-checked": { color: "#818cf8" },
+                    ml: 3.5,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    borderLeft: "2px solid #334155",
+                    pl: 2,
                   }}
-                />
-              }
-              label="Include Database Authentication Boilerplate"
-              sx={{ color: "#e2e8f0" }}
-            />
-          )}
+                >
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="postgres-orm-label" sx={{ color: "#94a3b8" }}>
+                      ORM / Query Builder
+                    </InputLabel>
+                    <Select
+                      labelId="postgres-orm-label"
+                      value={postgresOrm}
+                      label="ORM / Query Builder"
+                      onChange={(e) => setPostgresOrm(e.target.value)}
+                      sx={{
+                        color: "#fff",
+                        backgroundColor: "#1e293b",
+                        "& .MuiSvgIcon-root": { color: "#fff" },
+                      }}
+                    >
+                      <MenuItem value="TypeORM">TypeORM</MenuItem>
+                      <MenuItem value="Prisma">Prisma</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+            </Box>
+
+            <Divider sx={{ borderColor: "#334155" }} />
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={includeMongo}
+                    onChange={(e) => setIncludeMongo(e.target.checked)}
+                    sx={{ color: "#818cf8", "&.Mui-checked": { color: "#818cf8" } }}
+                  />
+                }
+                label="Include MongoDB Database"
+                sx={{ color: "#e2e8f0", m: 0 }}
+              />
+
+              {includeMongo && (
+                <Box
+                  sx={{
+                    ml: 3.5,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    borderLeft: "2px solid #334155",
+                    pl: 2,
+                  }}
+                >
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="mongo-orm-label" sx={{ color: "#94a3b8" }}>
+                      Database Adapter
+                    </InputLabel>
+                    <Select
+                      labelId="mongo-orm-label"
+                      value={mongoOrm}
+                      label="Database Adapter"
+                      onChange={(e) => setMongoOrm(e.target.value)}
+                      sx={{
+                        color: "#fff",
+                        backgroundColor: "#1e293b",
+                        "& .MuiSvgIcon-root": { color: "#fff" },
+                      }}
+                    >
+                      <MenuItem value="Mongoose">Mongoose</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+            </Box>
+          </Box>
 
           <Button
             type="submit"

@@ -53,7 +53,9 @@ export default function DirectoryBrowserModal({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/browse?path=${encodeURIComponent(targetPath)}`);
+      const res = await fetch(
+        `/api/browse?path=${encodeURIComponent(targetPath)}`,
+      );
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to read directory");
@@ -85,8 +87,8 @@ export default function DirectoryBrowserModal({
       currentPath.endsWith("\\") || currentPath.endsWith("/")
         ? ""
         : currentPath.includes("\\")
-        ? "\\"
-        : "/";
+          ? "\\"
+          : "/";
     fetchDirectory(`${currentPath}${separator}${subDirName}`);
   };
 
@@ -109,7 +111,7 @@ export default function DirectoryBrowserModal({
   };
 
   const filteredDirectories = directories.filter((dir) =>
-    dir.toLowerCase().includes(searchQuery.toLowerCase())
+    dir.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -128,13 +130,18 @@ export default function DirectoryBrowserModal({
       }}
     >
       <DialogTitle sx={{ borderBottom: "1px solid #1e293b", pb: 2 }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: "bold", color: "#818cf8" }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ fontWeight: "bold", color: "#818cf8" }}
+        >
           📂 Select Destination Directory
         </Typography>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3, display: "flex", flexDirection: "column", gap: 3 }}>
-        {/* Quick Navigation Shortcuts */}
+      <DialogContent
+        sx={{ p: 3, display: "flex", flexDirection: "column", gap: 3 }}
+      >
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
           {homeDir && (
             <Button
@@ -181,8 +188,11 @@ export default function DirectoryBrowserModal({
           ))}
         </Box>
 
-        {/* Current Path Bar with manual execution button */}
-        <Box component="form" onSubmit={handleJumpToPath} sx={{ display: "flex", gap: 1 }}>
+        <Box
+          component="form"
+          onSubmit={handleJumpToPath}
+          sx={{ display: "flex", gap: 1 }}
+        >
           <TextField
             value={pathInput}
             onChange={(e) => setPathInput(e.target.value)}
@@ -192,11 +202,19 @@ export default function DirectoryBrowserModal({
             variant="outlined"
             slotProps={{
               htmlInput: {
-                style: { color: "#fff", backgroundColor: "#1e293b", fontFamily: "monospace" },
+                style: {
+                  color: "#fff",
+                  backgroundColor: "#1e293b",
+                  fontFamily: "monospace",
+                },
               },
             }}
           />
-          <Button type="submit" variant="contained" sx={{ bgcolor: "#4f46e5", "&:hover": { bgcolor: "#4338ca" } }}>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ bgcolor: "#4f46e5", "&:hover": { bgcolor: "#4338ca" } }}
+          >
             Go
           </Button>
         </Box>
@@ -207,7 +225,6 @@ export default function DirectoryBrowserModal({
           </Typography>
         )}
 
-        {/* Filter Input */}
         <TextField
           label="Search folders..."
           variant="standard"
@@ -220,7 +237,6 @@ export default function DirectoryBrowserModal({
           }}
         />
 
-        {/* Directory Navigator Window */}
         <Paper
           variant="outlined"
           sx={{
@@ -234,32 +250,55 @@ export default function DirectoryBrowserModal({
           }}
         >
           {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", p: 4, height: "150px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                p: 4,
+                height: "150px",
+              }}
+            >
               <CircularProgress size={30} sx={{ color: "#818cf8" }} />
             </Box>
           ) : (
             <List disablePadding>
-              {/* Parent folder option */}
               {parentPath && (
-                <ListItem disablePadding divider sx={{ borderColor: "#1e293b" }}>
-                  <ListItemButton onClick={handleNavigateUp} sx={{ color: "#94a3b8", py: 1 }}>
+                <ListItem
+                  disablePadding
+                  divider
+                  sx={{ borderColor: "#1e293b" }}
+                >
+                  <ListItemButton
+                    onClick={handleNavigateUp}
+                    sx={{ color: "#94a3b8", py: 1 }}
+                  >
                     <ListItemIcon sx={{ minWidth: 32 }}>
                       <ArrowUpIcon />
                     </ListItemIcon>
-                    <ListItemText primary={<span style={{ fontWeight: "bold" }}>..</span>} />
+                    <ListItemText
+                      primary={<span style={{ fontWeight: "bold" }}>..</span>}
+                    />
                   </ListItemButton>
                 </ListItem>
               )}
 
-              {/* Subdirectories */}
               {filteredDirectories.length === 0 ? (
                 <Box sx={{ p: 4, textAlign: "center", color: "#64748b" }}>
                   No directories found here.
                 </Box>
               ) : (
                 filteredDirectories.map((dir) => (
-                  <ListItem key={dir} disablePadding divider sx={{ borderColor: "#1e293b" }}>
-                    <ListItemButton onClick={() => handleNavigate(dir)} sx={{ color: "#e2e8f0", py: 1 }}>
+                  <ListItem
+                    key={dir}
+                    disablePadding
+                    divider
+                    sx={{ borderColor: "#1e293b" }}
+                  >
+                    <ListItemButton
+                      onClick={() => handleNavigate(dir)}
+                      sx={{ color: "#e2e8f0", py: 1 }}
+                    >
                       <ListItemIcon sx={{ minWidth: 32 }}>
                         <FolderIcon />
                       </ListItemIcon>
@@ -275,7 +314,14 @@ export default function DirectoryBrowserModal({
 
       <Divider sx={{ borderColor: "#1e293b" }} />
 
-      <DialogActions sx={{ p: 2.5, bgcolor: "#0b0f19", borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+      <DialogActions
+        sx={{
+          p: 2.5,
+          bgcolor: "#0b0f19",
+          borderBottomLeftRadius: 16,
+          borderBottomRightRadius: 16,
+        }}
+      >
         <Typography
           sx={{
             color: "#64748b",
@@ -287,9 +333,15 @@ export default function DirectoryBrowserModal({
             maxWidth: "60%",
           }}
         >
-          Selected: <span style={{ color: "#38bdf8", fontFamily: "monospace" }}>{currentPath}</span>
+          Selected:{" "}
+          <span style={{ color: "#38bdf8", fontFamily: "monospace" }}>
+            {currentPath}
+          </span>
         </Typography>
-        <Button onClick={onClose} sx={{ color: "#94a3b8", "&:hover": { color: "#fff" } }}>
+        <Button
+          onClick={onClose}
+          sx={{ color: "#94a3b8", "&:hover": { color: "#fff" } }}
+        >
           Cancel
         </Button>
         <Button
