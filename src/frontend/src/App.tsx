@@ -1,17 +1,42 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Checkbox,
+  Button,
+  CircularProgress,
+  Container,
+} from "@mui/material";
+import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 
 export default function App() {
   const [projectName, setProjectName] = useState("my-nest-app");
   const [database, setDatabase] = useState("None");
+  const [destinationPath, setDestinationPath] = useState("");
   const [useAuth, setUseAuth] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const payload = { projectName, database, useAuth };
+    const backendDbValue =
+      database === "PostgreSQL" ? "PostgreSQL (TypeORM)" : "None";
+
+    const payload = {
+      projectName,
+      database: backendDbValue,
+      useAuth,
+      destinationPath: destinationPath.trim(),
+    };
 
     try {
       const response = await fetch("/api/generate", {
@@ -20,7 +45,12 @@ export default function App() {
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) setSuccess(true);
+      if (response.ok) {
+        setSuccess(true);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Generation failed. Check backend logs.");
+      }
     } catch (err) {
       alert("Generation failed. Check terminal log.");
     } finally {
@@ -30,97 +60,178 @@ export default function App() {
 
   if (success) {
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#4ade80" }}>
-        <h2>🚀 Success!</h2>
-        <p style={{ color: "#94a3b8" }}>
-          You can close this tab and return to your terminal.
-        </p>
-      </div>
+      <Box
+        sx={{ textAlign: "center", padding: "40px", color: "#4ade80", mt: 8 }}
+      >
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
+          sx={{ fontWeight: "bold" }}
+        >
+          🚀 Scaffold Complete!
+        </Typography>
+        <Typography sx={{ color: "#94a3b8" }}>
+          Your project has been successfully set up. You can close this tab and
+          return to the terminal.
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "500px",
-        margin: "50px auto",
-        padding: "20px",
-        background: "#1e293b",
-        color: "#fff",
-        borderRadius: "12px",
-      }}
-    >
-      <h1>NestJS Generator Layout</h1>
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          marginTop: 6,
+          padding: 4,
+          background: "#1e293b",
+          color: "#fff",
+          borderRadius: 4,
+          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+          border: "1px solid #334155",
+        }}
       >
-        <div>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Project Name
-          </label>
-          <input
-            type="text"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              background: "#0f172a",
-              border: "1px solid #334155",
-              color: "#fff",
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Database
-          </label>
-          <select
-            value={database}
-            onChange={(e) => setDatabase(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              background: "#0f172a",
-              border: "1px solid #334155",
-              color: "#fff",
-            }}
-          >
-            <option value="None">None</option>
-            <option value="PostgreSQL">PostgreSQL</option>
-            <option value="MongoDB">MongoDB</option>
-          </select>
-        </div>
-
-        {/* Dynamic React Option: Only show Auth if a DB is selected */}
-        {database !== "None" && (
-          <label style={{ display: "flex", gap: "10px", cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              checked={useAuth}
-              onChange={(e) => setUseAuth(e.target.checked)}
-            />
-            Include Database Authentication Boilerplate
-          </label>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "10px",
-            background: "#4f46e5",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{
+            color: "#818cf8",
+            fontWeight: "bold",
+            textAlign: "center",
+            mb: 3,
+            background: "linear-gradient(90deg, #818cf8 0%, #a78bfa 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
-          {loading ? "Generating..." : "Generate Project"}
-        </button>
-      </form>
-    </div>
+          NestJS Scaffolder
+        </Typography>
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
+        >
+          <TextField
+            label="Project Name"
+            variant="outlined"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            fullWidth
+            required
+            slotProps={{
+              inputLabel: { style: { color: "#94a3b8" } },
+              htmlInput: {
+                style: { color: "#fff", backgroundColor: "#0f172a" },
+              },
+            }}
+          />
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <TextField
+                label="Destination Path"
+                variant="outlined"
+                value={destinationPath}
+                onChange={(e) => setDestinationPath(e.target.value)}
+                fullWidth
+                placeholder="Defaults to current folder"
+                slotProps={{
+                  inputLabel: { style: { color: "#94a3b8" } },
+                  htmlInput: {
+                    style: { color: "#fff", backgroundColor: "#0f172a" },
+                  },
+                }}
+              />
+              <Button
+                variant="outlined"
+                onClick={() => setPickerOpen(true)}
+                sx={{
+                  color: "#818cf8",
+                  borderColor: "#4f46e5",
+                  minWidth: "100px",
+                  "&:hover": { borderColor: "#c084fc", background: "#1e1b4b" },
+                }}
+              >
+                Browse...
+              </Button>
+            </Box>
+            <Typography variant="caption" sx={{ color: "#94a3b8", pl: 1 }}>
+              Leave blank to create project in the server's working directory.
+            </Typography>
+          </Box>
+
+          <DirectoryBrowserModal
+            open={pickerOpen}
+            onClose={() => setPickerOpen(false)}
+            initialPath={destinationPath}
+            onSelect={(selected) => setDestinationPath(selected)}
+          />
+
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="database-label" sx={{ color: "#94a3b8" }}>
+              Database
+            </InputLabel>
+            <Select
+              labelId="database-label"
+              value={database}
+              label="Database"
+              onChange={(e) => setDatabase(e.target.value)}
+              sx={{
+                color: "#fff",
+                backgroundColor: "#0f172a",
+                "& .MuiSvgIcon-root": { color: "#fff" },
+              }}
+            >
+              <MenuItem value="None">None (SQLite/In-Memory Mock)</MenuItem>
+              <MenuItem value="PostgreSQL">PostgreSQL (TypeORM)</MenuItem>
+            </Select>
+          </FormControl>
+
+          {database !== "None" && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={useAuth}
+                  onChange={(e) => setUseAuth(e.target.checked)}
+                  sx={{
+                    color: "#818cf8",
+                    "&.Mui-checked": { color: "#818cf8" },
+                  }}
+                />
+              }
+              label="Include Database Authentication Boilerplate"
+              sx={{ color: "#e2e8f0" }}
+            />
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            variant="contained"
+            size="large"
+            sx={{
+              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              color: "#fff",
+              "&:hover": {
+                background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
+              },
+              padding: "12px",
+              fontWeight: "bold",
+              boxShadow: "0 4px 15px -3px rgba(99, 102, 241, 0.4)",
+              mt: 1,
+            }}
+          >
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Generate Project"
+            )}
+          </Button>
+        </Box>
+      </Box>
+    </Container>
   );
 }

@@ -2,6 +2,9 @@
 import express from "express";
 import open from "open";
 import * as path from "path";
+import * as fs from "fs";
+import * as os from "os";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { copySkeleton } from "./utils/copy-skeleton";
 import { pruneDatabase } from "./tasks/prune-db";
@@ -9,6 +12,7 @@ import { pruneDatabase } from "./tasks/prune-db";
 interface GeneratorAnswers {
   projectName: string;
   database: "PostgreSQL (TypeORM)" | "None";
+  destinationPath: string;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,19 +24,81 @@ async function startWebServer() {
 
   app.use(express.json());
 
+  // Directory browsing API endpoint
+  app.get("/api/browse", (req, res) => {
+    try {
+      let targetPath = (req.query.path as string) || "";
+
+      // Default to home directory if no path is provided
+      if (!targetPath) {
+        targetPath = os.homedir();
+      }
+
+      // Resolve absolute path
+      const resolvedPath = path.resolve(targetPath);
+
+      // Validate existence and type
+      if (!fs.existsSync(resolvedPath)) {
+        return res.status(400).send({ error: "Path does not exist." });
+      }
+
+      const stats = fs.statSync(resolvedPath);
+      if (!stats.isDirectory()) {
+        return res.status(400).send({ error: "Path is not a directory." });
+      }
+
+      // Read directories inside targetPath
+      const files = fs.readdirSync(resolvedPath, { withFileTypes: true });
+      const subdirectories = files
+        .filter((file) => file.isDirectory())
+        .map((file) => file.name)
+        .sort((a, b) => a.localeCompare(b));
+
+      // Calculate parent path (if at root, it equals resolvedPath)
+      const parentPath = path.dirname(resolvedPath);
+
+      // Detect Windows drive letters
+      let drives: string[] = [];
+      if (process.platform === "win32") {
+        try {
+          const stdout = execSync("wmic logicaldisk get name").toString();
+          drives = stdout
+            .split("\r\r\n")
+            .filter((value) => /[A-Za-z]:/.test(value))
+            .map((value) => value.trim() + "\\");
+        } catch (e) {
+          drives = ["C:\\"];
+        }
+      }
+
+      res.status(200).send({
+        currentPath: resolvedPath,
+        parentPath: parentPath === resolvedPath ? null : parentPath,
+        subdirectories,
+        drives,
+        homeDir: os.homedir(),
+        projectDir: process.cwd()
+      });
+    } catch (error: any) {
+      console.error("Browse Error:", error);
+      res.status(500).send({ error: error.message || "Failed to read directory." });
+    }
+  });
+
+  // Serve static production assets built from React
   const rootDir = path.resolve(__dirname, "../");
   app.use(express.static(path.join(rootDir, "dist-frontend")));
 
+  // Only keep the generation handler
   app.post("/api/generate", async (req, res) => {
     const answers: GeneratorAnswers = req.body;
+    console.log("\n📥 Received Configuration:", answers);
 
-    console.log("\n📥 Received Configuration from React UI:", answers);
-
-    const targetPath = path.join(process.cwd(), answers.projectName);
+    const baseDir = answers.destinationPath || process.cwd();
+    const targetPath = path.join(baseDir, answers.projectName);
 
     try {
       console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
-
       await copySkeleton(targetPath);
 
       if (answers.database === "None") {
@@ -42,11 +108,10 @@ async function startWebServer() {
       console.log(
         `\n🎉 Project ${answers.projectName} configured successfully!`,
       );
-
       res.status(200).send({ message: "Success" });
 
       setTimeout(() => {
-        console.log("👋 Configuration complete. Shutting down local server.");
+        console.log("👋 Shutting down local server.");
         process.exit(0);
       }, 1500);
     } catch (error) {
@@ -61,8 +126,6 @@ async function startWebServer() {
     console.log(
       `🌐 Configuration dashboard active at http://localhost:${PORT}`,
     );
-    console.log(`Press Ctrl+C to abort configuration manually.`);
-
     await open(`http://localhost:${PORT}`);
   });
 }

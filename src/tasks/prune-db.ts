@@ -1,6 +1,5 @@
 import * as path from "path";
 import { Project, SyntaxKind } from "ts-morph";
-// 1. Import the default export instead of named imports
 import fsExtra from "fs-extra";
 
 export async function pruneDatabase(projectRoot: string) {
