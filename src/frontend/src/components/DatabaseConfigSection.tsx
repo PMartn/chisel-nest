@@ -1,4 +1,3 @@
-
 import { Box, Divider } from "@mui/material";
 import { FormCard, StyledCheckbox, StyledSelect } from "./FormControls";
 
@@ -11,8 +10,6 @@ interface DatabaseConfigSectionProps {
   setIncludeMongo: (val: boolean) => void;
   mongoOrm: string;
   setMongoOrm: (val: string) => void;
-  useAuth: boolean;
-  setUseAuth: (val: boolean) => void;
 }
 
 export const DatabaseConfigSection = ({
@@ -24,8 +21,6 @@ export const DatabaseConfigSection = ({
   setIncludeMongo,
   mongoOrm,
   setMongoOrm,
-  useAuth,
-  setUseAuth,
 }: DatabaseConfigSectionProps) => (
   <FormCard title="Database Integration">
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -54,12 +49,6 @@ export const DatabaseConfigSection = ({
               { value: "TypeORM", label: "TypeORM" },
               { value: "Prisma", label: "Prisma" },
             ]}
-          />
-
-          <StyledCheckbox
-            label="Include Database Authentication Boilerplate"
-            checked={useAuth}
-            onChange={setUseAuth}
           />
         </Box>
       )}

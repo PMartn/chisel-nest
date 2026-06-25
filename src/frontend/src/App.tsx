@@ -18,7 +18,6 @@ export default function App() {
   const [postgresOrm, setPostgresOrm] = useState("TypeORM");
   const [includeMongo, setIncludeMongo] = useState(false);
   const [mongoOrm, setMongoOrm] = useState("Mongoose");
-  const [useAuth, setUseAuth] = useState(false);
   const [usePinoLogger, setUsePinoLogger] = useState(true);
   const [useHelmet, setUseHelmet] = useState(true);
   const [useRateLimiting, setUseRateLimiting] = useState(true);
@@ -31,12 +30,13 @@ export default function App() {
     setLoading(true);
 
     const backendDbValue =
-      includePostgres && postgresOrm === "TypeORM" ? "PostgreSQL (TypeORM)" : "None";
+      includePostgres && postgresOrm === "TypeORM"
+        ? "PostgreSQL (TypeORM)"
+        : "None";
 
     const payload = {
       projectName,
       database: backendDbValue,
-      useAuth,
       destinationPath: destinationPath.trim(),
       postgresEnabled: includePostgres,
       postgresOrm,
@@ -69,12 +69,20 @@ export default function App() {
 
   if (success) {
     return (
-      <Box sx={{ textAlign: "center", padding: "40px", color: "#4ade80", mt: 8 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: "bold" }}>
+      <Box
+        sx={{ textAlign: "center", padding: "40px", color: "#4ade80", mt: 8 }}
+      >
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
+          sx={{ fontWeight: "bold" }}
+        >
           🚀 Scaffold Complete!
         </Typography>
         <Typography sx={{ color: "#94a3b8" }}>
-          Your project has been successfully set up. You can close this tab and return to the terminal.
+          Your project has been successfully set up. You can close this tab and
+          return to the terminal.
         </Typography>
       </Box>
     );
@@ -139,8 +147,6 @@ export default function App() {
             setIncludeMongo={setIncludeMongo}
             mongoOrm={mongoOrm}
             setMongoOrm={setMongoOrm}
-            useAuth={useAuth}
-            setUseAuth={setUseAuth}
           />
 
           <MiddlewareConfigSection
