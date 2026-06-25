@@ -2,19 +2,14 @@ import React, { useState } from "react";
 import {
   Box,
   Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  FormControlLabel,
-  Checkbox,
   Button,
   CircularProgress,
   Container,
-  Divider,
 } from "@mui/material";
 import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
+import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
+import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
+import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
 
 export default function App() {
   const [projectName, setProjectName] = useState("my-nest-app");
@@ -35,13 +30,8 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
 
-    // Keep compatibility with the current backend pruning logic:
-    // If PostgreSQL with TypeORM is selected, we pass "PostgreSQL (TypeORM)".
-    // Otherwise, we pass "None".
     const backendDbValue =
-      includePostgres && postgresOrm === "TypeORM"
-        ? "PostgreSQL (TypeORM)"
-        : "None";
+      includePostgres && postgresOrm === "TypeORM" ? "PostgreSQL (TypeORM)" : "None";
 
     const payload = {
       projectName,
@@ -79,20 +69,12 @@ export default function App() {
 
   if (success) {
     return (
-      <Box
-        sx={{ textAlign: "center", padding: "40px", color: "#4ade80", mt: 8 }}
-      >
-        <Typography
-          variant="h4"
-          component="h2"
-          gutterBottom
-          sx={{ fontWeight: "bold" }}
-        >
+      <Box sx={{ textAlign: "center", padding: "40px", color: "#4ade80", mt: 8 }}>
+        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: "bold" }}>
           🚀 Scaffold Complete!
         </Typography>
         <Typography sx={{ color: "#94a3b8" }}>
-          Your project has been successfully set up. You can close this tab and
-          return to the terminal.
+          Your project has been successfully set up. You can close this tab and return to the terminal.
         </Typography>
       </Box>
     );
@@ -133,58 +115,14 @@ export default function App() {
           onSubmit={handleSubmit}
           sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
         >
-          {/* Project Name */}
-          <TextField
-            label="Project Name"
-            variant="outlined"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            fullWidth
-            required
-            slotProps={{
-              inputLabel: { style: { color: "#94a3b8" } },
-              htmlInput: {
-                style: { color: "#fff", backgroundColor: "#0f172a" },
-              },
-            }}
+          <ProjectMetadataSection
+            projectName={projectName}
+            setProjectName={setProjectName}
+            destinationPath={destinationPath}
+            setDestinationPath={setDestinationPath}
+            setPickerOpen={setPickerOpen}
           />
 
-          {/* Destination Path Selector */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <TextField
-                label="Destination Path"
-                variant="outlined"
-                value={destinationPath}
-                onChange={(e) => setDestinationPath(e.target.value)}
-                fullWidth
-                placeholder="Defaults to current folder"
-                slotProps={{
-                  inputLabel: { style: { color: "#94a3b8" } },
-                  htmlInput: {
-                    style: { color: "#fff", backgroundColor: "#0f172a" },
-                  },
-                }}
-              />
-              <Button
-                variant="outlined"
-                onClick={() => setPickerOpen(true)}
-                sx={{
-                  color: "#818cf8",
-                  borderColor: "#4f46e5",
-                  minWidth: "100px",
-                  "&:hover": { borderColor: "#c084fc", background: "#1e1b4b" },
-                }}
-              >
-                Browse...
-              </Button>
-            </Box>
-            <Typography variant="caption" sx={{ color: "#94a3b8", pl: 1 }}>
-              Leave blank to create project in the server's working directory.
-            </Typography>
-          </Box>
-
-          {/* Custom Directory Selector Modal */}
           <DirectoryBrowserModal
             open={pickerOpen}
             onClose={() => setPickerOpen(false)}
@@ -192,214 +130,28 @@ export default function App() {
             onSelect={(selected) => setDestinationPath(selected)}
           />
 
-          {/* Database Setup Panel */}
-          <Box
-            sx={{
-              border: "1px solid #334155",
-              borderRadius: 2,
-              p: 2.5,
-              bgcolor: "#0f172a",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2.5,
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{ color: "#818cf8", fontWeight: "bold" }}
-            >
-              Database Integration
-            </Typography>
+          <DatabaseConfigSection
+            includePostgres={includePostgres}
+            setIncludePostgres={setIncludePostgres}
+            postgresOrm={postgresOrm}
+            setPostgresOrm={setPostgresOrm}
+            includeMongo={includeMongo}
+            setIncludeMongo={setIncludeMongo}
+            mongoOrm={mongoOrm}
+            setMongoOrm={setMongoOrm}
+            useAuth={useAuth}
+            setUseAuth={setUseAuth}
+          />
 
-            {/* PostgreSQL Options Group */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={includePostgres}
-                    onChange={(e) => setIncludePostgres(e.target.checked)}
-                    sx={{
-                      color: "#818cf8",
-                      "&.Mui-checked": { color: "#818cf8" },
-                    }}
-                  />
-                }
-                label="Include PostgreSQL Database"
-                sx={{ color: "#e2e8f0", m: 0 }}
-              />
+          <MiddlewareConfigSection
+            usePinoLogger={usePinoLogger}
+            setUsePinoLogger={setUsePinoLogger}
+            useHelmet={useHelmet}
+            setUseHelmet={setUseHelmet}
+            useRateLimiting={useRateLimiting}
+            setUseRateLimiting={setUseRateLimiting}
+          />
 
-              {includePostgres && (
-                <Box
-                  sx={{
-                    ml: 3.5,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    borderLeft: "2px solid #334155",
-                    pl: 2,
-                  }}
-                >
-                  <FormControl fullWidth size="small">
-                    <InputLabel
-                      id="postgres-orm-label"
-                      sx={{ color: "#94a3b8" }}
-                    >
-                      ORM / Query Builder
-                    </InputLabel>
-                    <Select
-                      labelId="postgres-orm-label"
-                      value={postgresOrm}
-                      label="ORM / Query Builder"
-                      onChange={(e) => setPostgresOrm(e.target.value)}
-                      sx={{
-                        color: "#fff",
-                        backgroundColor: "#1e293b",
-                        "& .MuiSvgIcon-root": { color: "#fff" },
-                      }}
-                    >
-                      <MenuItem value="TypeORM">TypeORM</MenuItem>
-                      <MenuItem value="Prisma">Prisma</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  {/* Auth Checklist option for PostgreSQL */}
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={useAuth}
-                        onChange={(e) => setUseAuth(e.target.checked)}
-                        sx={{
-                          color: "#818cf8",
-                          "&.Mui-checked": { color: "#818cf8" },
-                        }}
-                      />
-                    }
-                    label="Include Database Authentication Boilerplate"
-                    sx={{ color: "#cbd5e1", m: 0 }}
-                  />
-                </Box>
-              )}
-            </Box>
-
-            <Divider sx={{ borderColor: "#334155" }} />
-
-            {/* MongoDB Options Group */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={includeMongo}
-                    onChange={(e) => setIncludeMongo(e.target.checked)}
-                    sx={{
-                      color: "#818cf8",
-                      "&.Mui-checked": { color: "#818cf8" },
-                    }}
-                  />
-                }
-                label="Include MongoDB Database"
-                sx={{ color: "#e2e8f0", m: 0 }}
-              />
-
-              {includeMongo && (
-                <Box
-                  sx={{
-                    ml: 3.5,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    borderLeft: "2px solid #334155",
-                    pl: 2,
-                  }}
-                >
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="mongo-orm-label" sx={{ color: "#94a3b8" }}>
-                      Database Adapter
-                    </InputLabel>
-                    <Select
-                      labelId="mongo-orm-label"
-                      value={mongoOrm}
-                      label="Database Adapter"
-                      onChange={(e) => setMongoOrm(e.target.value)}
-                      sx={{
-                        color: "#fff",
-                        backgroundColor: "#1e293b",
-                        "& .MuiSvgIcon-root": { color: "#fff" },
-                      }}
-                    >
-                      <MenuItem value="Mongoose">Mongoose</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
-            </Box>
-          </Box>
-
-          {/* Security & Middleware Options Panel */}
-          <Box
-            sx={{
-              border: "1px solid #334155",
-              borderRadius: 2,
-              p: 2.5,
-              bgcolor: "#0f172a",
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{ color: "#818cf8", fontWeight: "bold" }}
-            >
-              Security & Logging Middleware
-            </Typography>
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={usePinoLogger}
-                  onChange={(e) => setUsePinoLogger(e.target.checked)}
-                  sx={{
-                    color: "#818cf8",
-                    "&.Mui-checked": { color: "#818cf8" },
-                  }}
-                />
-              }
-              label="Pino Logger"
-              sx={{ color: "#e2e8f0", m: 0 }}
-            />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={useHelmet}
-                  onChange={(e) => setUseHelmet(e.target.checked)}
-                  sx={{
-                    color: "#818cf8",
-                    "&.Mui-checked": { color: "#818cf8" },
-                  }}
-                />
-              }
-              label="Helmet (HTTP Header Security)"
-              sx={{ color: "#e2e8f0", m: 0 }}
-            />
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={useRateLimiting}
-                  onChange={(e) => setUseRateLimiting(e.target.checked)}
-                  sx={{
-                    color: "#818cf8",
-                    "&.Mui-checked": { color: "#818cf8" },
-                  }}
-                />
-              }
-              label="Rate Limiting"
-              sx={{ color: "#e2e8f0", m: 0 }}
-            />
-          </Box>
-
-          {/* Form Action */}
           <Button
             type="submit"
             disabled={loading}
