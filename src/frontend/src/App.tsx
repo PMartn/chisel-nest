@@ -10,6 +10,7 @@ import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
+import type { GeneratorAnswers } from "../../index";
 
 export default function App() {
   const [projectName, setProjectName] = useState("my-nest-app");
@@ -29,14 +30,8 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
 
-    const backendDbValue =
-      includePostgres && postgresOrm === "TypeORM"
-        ? "PostgreSQL (TypeORM)"
-        : "None";
-
-    const payload = {
+    const payload: GeneratorAnswers = {
       projectName,
-      database: backendDbValue,
       destinationPath: destinationPath.trim(),
       postgresEnabled: includePostgres,
       postgresOrm,

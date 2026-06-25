@@ -9,10 +9,16 @@ import { fileURLToPath } from "url";
 import { copySkeleton } from "./utils/copy-skeleton";
 import { pruneDatabase } from "./tasks/prune-db";
 
-interface GeneratorAnswers {
+export interface GeneratorAnswers {
   projectName: string;
-  database: "PostgreSQL (TypeORM)" | "None";
   destinationPath: string;
+  postgresEnabled: boolean;
+  postgresOrm: string;
+  mongoEnabled: boolean;
+  mongoOrm: string;
+  usePinoLogger: boolean;
+  useHelmet: boolean;
+  useRateLimiting: boolean;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -77,37 +83,46 @@ async function startWebServer() {
         subdirectories,
         drives,
         homeDir: os.homedir(),
-        projectDir: process.cwd()
+        projectDir: process.cwd(),
       });
     } catch (error: any) {
       console.error("Browse Error:", error);
-      res.status(500).send({ error: error.message || "Failed to read directory." });
+      res
+        .status(500)
+        .send({ error: error.message || "Failed to read directory." });
     }
   });
 
-  // Serve static production assets built from React
   const rootDir = path.resolve(__dirname, "../");
   app.use(express.static(path.join(rootDir, "dist-frontend")));
 
-  // Only keep the generation handler
   app.post("/api/generate", async (req, res) => {
     const answers: GeneratorAnswers = req.body;
     console.log("\n📥 Received Configuration:", answers);
+    const {
+      projectName,
+      destinationPath,
+      postgresEnabled,
+      postgresOrm,
+      mongoEnabled,
+      mongoOrm,
+      usePinoLogger,
+      useHelmet,
+      useRateLimiting,
+    }: GeneratorAnswers = answers;
 
-    const baseDir = answers.destinationPath || process.cwd();
-    const targetPath = path.join(baseDir, answers.projectName);
+    const baseDir = destinationPath || process.cwd();
+    const targetPath = path.join(baseDir, projectName);
 
     try {
       console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
       await copySkeleton(targetPath);
 
-      if (answers.database === "None") {
+      if (mongoEnabled === false && postgresEnabled === false) {
         await pruneDatabase(targetPath);
       }
 
-      console.log(
-        `\n🎉 Project ${answers.projectName} configured successfully!`,
-      );
+      console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });
 
       setTimeout(() => {
