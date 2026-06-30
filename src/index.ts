@@ -7,7 +7,7 @@ import * as os from "os";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { copySkeleton } from "./utils/copy-skeleton";
-import { pruneDatabase } from "./tasks/prune-db";
+import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -30,20 +30,16 @@ async function startWebServer() {
 
   app.use(express.json());
 
-  // Directory browsing API endpoint
   app.get("/api/browse", (req, res) => {
     try {
       let targetPath = (req.query.path as string) || "";
 
-      // Default to home directory if no path is provided
       if (!targetPath) {
         targetPath = os.homedir();
       }
 
-      // Resolve absolute path
       const resolvedPath = path.resolve(targetPath);
 
-      // Validate existence and type
       if (!fs.existsSync(resolvedPath)) {
         return res.status(400).send({ error: "Path does not exist." });
       }
@@ -53,17 +49,14 @@ async function startWebServer() {
         return res.status(400).send({ error: "Path is not a directory." });
       }
 
-      // Read directories inside targetPath
       const files = fs.readdirSync(resolvedPath, { withFileTypes: true });
       const subdirectories = files
         .filter((file) => file.isDirectory())
         .map((file) => file.name)
         .sort((a, b) => a.localeCompare(b));
 
-      // Calculate parent path (if at root, it equals resolvedPath)
       const parentPath = path.dirname(resolvedPath);
 
-      // Detect Windows drive letters
       let drives: string[] = [];
       if (process.platform === "win32") {
         try {
@@ -103,12 +96,12 @@ async function startWebServer() {
       projectName,
       destinationPath,
       postgresEnabled,
-      postgresOrm,
-      mongoEnabled,
-      mongoOrm,
-      usePinoLogger,
-      useHelmet,
-      useRateLimiting,
+      //postgresOrm,
+      //mongoEnabled,
+      //mongoOrm,
+      //usePinoLogger,
+      //useHelmet,
+      //useRateLimiting,
     }: GeneratorAnswers = answers;
 
     const baseDir = destinationPath || process.cwd();
@@ -118,8 +111,8 @@ async function startWebServer() {
       console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
       await copySkeleton(targetPath);
 
-      if (mongoEnabled === false && postgresEnabled === false) {
-        await pruneDatabase(targetPath);
+      if (!postgresEnabled) {
+        await prunePostgresDatabase(targetPath);
       }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
