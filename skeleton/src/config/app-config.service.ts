@@ -16,4 +16,8 @@ export class AppConfigService {
   get nodeEnv(): string {
     return this.configService.get<string>('NODE_ENV') || 'development';
   }
+
+  get mongoUri(): string {
+    return this.configService.get<string>('MONGO_URI')!;
+  }
 }

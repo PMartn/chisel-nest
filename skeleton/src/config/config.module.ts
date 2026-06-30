@@ -14,6 +14,7 @@ import * as Joi from 'joi';
           .default('development'),
         PORT: Joi.number().default(3000),
         DATABASE_URL: Joi.string().required(),
+        MONGO_URI: Joi.string().required(),
       }),
     }),
   ],

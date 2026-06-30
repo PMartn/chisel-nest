@@ -15,8 +15,24 @@ services:
     networks:
       - nest_network
 
+  mongodb:
+    image: mongo:7.0
+    container_name: nest_mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: local_secure_password
+      MONGO_INITDB_DATABASE: nest_boilerplate_db
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - nest_network
+
 volumes:
   pgdata:
+    driver: local
+  mongodata:
     driver: local
 
 networks:
