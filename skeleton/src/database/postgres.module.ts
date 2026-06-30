@@ -15,4 +15,4 @@ import { AppConfigService } from '../config/app-config.service';
     }),
   ],
 })
-export class DatabaseModule {}
+export class PostgresModule {}
