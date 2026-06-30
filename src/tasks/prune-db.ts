@@ -137,16 +137,10 @@ export async function pruneDatabase(projectRoot: string) {
     if (composeDoc.hasIn(["volumes", "mongodata"]))
       composeDoc.deleteIn(["volumes", "mongodata"]);
 
-    // Evaluate remaining configuration state
-    const services = composeDoc.get("services") as YAML.YAMLMap;
-    if (!services || services.items.length === 0) {
-      await remove(dockerComposePath);
-      console.log("  └─ docker-compose.yml is now empty, file deleted.");
-    } else {
-      await writeFile(dockerComposePath, composeDoc.toString(), "utf8");
-      console.log(
-        "  └─ Removed database service configurations from docker-compose.yml",
-      );
-    }
+    // Simply save the document back to disk. Your backend service is preserved safely inside!
+    await writeFile(dockerComposePath, composeDoc.toString(), "utf8");
+    console.log(
+      "  └─ Removed database service configurations from docker-compose.yml",
+    );
   }
 }
