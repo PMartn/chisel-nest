@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import { copySkeleton } from "./utils/copy-skeleton";
 import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
 import { pruneDatabase } from "./tasks/prune-db";
+import { pruneMongoDatabase } from "./tasks/prune-mongo-db";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -116,6 +117,8 @@ async function startWebServer() {
         await pruneDatabase(targetPath);
       } else if (!postgresEnabled) {
         await prunePostgresDatabase(targetPath);
+      } else if (!mongoEnabled) {
+        await pruneMongoDatabase(targetPath);
       }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
