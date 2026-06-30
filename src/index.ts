@@ -8,6 +8,7 @@ import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { copySkeleton } from "./utils/copy-skeleton";
 import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
+import { pruneDatabase } from "./tasks/prune-db";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -97,7 +98,7 @@ async function startWebServer() {
       destinationPath,
       postgresEnabled,
       //postgresOrm,
-      //mongoEnabled,
+      mongoEnabled,
       //mongoOrm,
       //usePinoLogger,
       //useHelmet,
@@ -111,7 +112,9 @@ async function startWebServer() {
       console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
       await copySkeleton(targetPath);
 
-      if (!postgresEnabled) {
+      if (!postgresEnabled && !mongoEnabled) {
+        await pruneDatabase(targetPath);
+      } else if (!postgresEnabled) {
         await prunePostgresDatabase(targetPath);
       }
 

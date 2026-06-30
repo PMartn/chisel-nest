@@ -2,7 +2,7 @@ import * as path from "path";
 import { Project, SyntaxKind } from "ts-morph";
 import fsExtra from "fs-extra";
 
-export async function prunePostgresDatabase(projectRoot: string) {
+export async function pruneDatabase(projectRoot: string) {
   console.log("✂️  Starting database pruning operation...");
 
   const { pathExists, readJson, writeJson, remove } = fsExtra;
