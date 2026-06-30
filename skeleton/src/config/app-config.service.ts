@@ -5,8 +5,8 @@ import { ConfigService } from '@nestjs/config';
 export class AppConfigService {
   constructor(private configService: ConfigService) {}
 
-  get databaseUrl(): string {
-    return this.configService.get<string>('DATABASE_URL')!;
+  get postgresUrl(): string {
+    return this.configService.get<string>('POSTGRES_URL')!;
   }
 
   get port(): number {

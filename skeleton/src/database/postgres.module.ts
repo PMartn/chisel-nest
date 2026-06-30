@@ -8,7 +8,7 @@ import { AppConfigService } from '../config/app-config.service';
       inject: [AppConfigService],
       useFactory: (configService: AppConfigService) => ({
         type: 'postgres',
-        url: configService.databaseUrl,
+        url: configService.postgresUrl,
         autoLoadEntities: true,
         synchronize: true, // TODO: Add option to toggle this
       }),
