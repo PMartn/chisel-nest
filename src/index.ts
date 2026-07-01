@@ -11,6 +11,8 @@ import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
 import { pruneDatabase } from "./tasks/prune-db";
 import { pruneMongoDatabase } from "./tasks/prune-mongo-db";
 import { pruneHelmet } from "./tasks/prune-helmet";
+import { prunePinoLogger } from "./tasks/prune-pino";
+import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -102,7 +104,7 @@ async function startWebServer() {
       //postgresOrm,
       mongoEnabled,
       //mongoOrm,
-      //usePinoLogger,
+      usePinoLogger,
       useHelmet,
       //useRateLimiting,
     }: GeneratorAnswers = answers;
@@ -114,6 +116,8 @@ async function startWebServer() {
       console.log(`\n🚀 Scaffolding project in: ${targetPath}...\n`);
       await copySkeleton(targetPath);
 
+      const shouldRemoveConfigFromAppAppModule = !usePinoLogger;
+
       if (!postgresEnabled && !mongoEnabled) {
         await pruneDatabase(targetPath);
       } else if (!postgresEnabled) {
@@ -121,8 +125,14 @@ async function startWebServer() {
       } else if (!mongoEnabled) {
         await pruneMongoDatabase(targetPath);
       }
+      if (!usePinoLogger) {
+        await prunePinoLogger(targetPath);
+      }
       if (!useHelmet) {
         await pruneHelmet(targetPath);
+      }
+      if (shouldRemoveConfigFromAppAppModule) {
+        await pruneConfigFromAppModule(targetPath);
       }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
