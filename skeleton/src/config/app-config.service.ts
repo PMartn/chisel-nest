@@ -24,4 +24,8 @@ export class AppConfigService {
   get isDevelopment(): boolean {
     return this.configService.get<string>('NODE_ENV') === 'development';
   }
+
+  get isProduction(): boolean {
+    return this.configService.get<string>('NODE_ENV') === 'production';
+  }
 }

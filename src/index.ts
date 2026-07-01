@@ -14,6 +14,7 @@ import { pruneHelmet } from "./tasks/prune-helmet";
 import { prunePino } from "./tasks/prune-pino";
 import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
 import { pruneThrottler } from "./tasks/prune-throttler";
+import { updateSwaggerMetadata } from "./tasks/update-swagger-metadata";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -119,6 +120,7 @@ async function startWebServer() {
 
       const shouldRemoveConfigFromAppAppModule = !usePinoLogger;
 
+      await updateSwaggerMetadata(targetPath, projectName);
       if (!postgresEnabled && !mongoEnabled) {
         await pruneDatabase(targetPath);
       } else if (!postgresEnabled) {
@@ -135,11 +137,10 @@ async function startWebServer() {
       if (!useRateLimiting) {
         await pruneThrottler(targetPath);
       }
-      
+
       if (shouldRemoveConfigFromAppAppModule) {
         await pruneConfigFromAppModule(targetPath);
       }
-
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });
