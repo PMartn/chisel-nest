@@ -107,7 +107,8 @@ export function removeNestModuleImport(
 
   if (importsArray) {
     importsArray.getElements().forEach((element) => {
-      if (element.getText() === moduleName) {
+      // Changed from === to .startsWith() to capture dynamic .forRoot() modules
+      if (element.getText().startsWith(moduleName)) {
         importsArray.removeElement(element);
       }
     });

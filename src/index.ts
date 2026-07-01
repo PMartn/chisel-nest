@@ -11,8 +11,9 @@ import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
 import { pruneDatabase } from "./tasks/prune-db";
 import { pruneMongoDatabase } from "./tasks/prune-mongo-db";
 import { pruneHelmet } from "./tasks/prune-helmet";
-import { prunePinoLogger } from "./tasks/prune-pino";
+import { prunePino } from "./tasks/prune-pino";
 import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
+import { pruneThrottler } from "./tasks/prune-throttler";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -106,7 +107,7 @@ async function startWebServer() {
       //mongoOrm,
       usePinoLogger,
       useHelmet,
-      //useRateLimiting,
+      useRateLimiting,
     }: GeneratorAnswers = answers;
 
     const baseDir = destinationPath || process.cwd();
@@ -126,14 +127,19 @@ async function startWebServer() {
         await pruneMongoDatabase(targetPath);
       }
       if (!usePinoLogger) {
-        await prunePinoLogger(targetPath);
+        await prunePino(targetPath);
       }
       if (!useHelmet) {
         await pruneHelmet(targetPath);
       }
+      if (!useRateLimiting) {
+        await pruneThrottler(targetPath);
+      }
+      
       if (shouldRemoveConfigFromAppAppModule) {
         await pruneConfigFromAppModule(targetPath);
       }
+
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });

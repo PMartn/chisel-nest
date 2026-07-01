@@ -3,9 +3,10 @@ import { Project, SyntaxKind } from "ts-morph";
 import {
   pruneDependencies,
   removeImportBySpecifier,
+  removeNestModuleImport,
 } from "./utils/prune-helpers";
 
-export async function prunePinoLogger(projectRoot: string) {
+export async function prunePino(projectRoot: string) {
   console.log("✂️  Starting Pino Logger pruning operation...");
 
   await pruneDependencies(projectRoot, [
@@ -20,28 +21,7 @@ export async function prunePinoLogger(projectRoot: string) {
     path.join(projectRoot, "src/app.module.ts"),
   );
   removeImportBySpecifier(appModuleFile, "pino-nestjs");
-
-  const appModuleClass = appModuleFile.getClass("AppModule");
-  const moduleDecorator = appModuleClass?.getDecorator("Module");
-  if (moduleDecorator) {
-    const decoratorArg = moduleDecorator
-      .getArguments()[0]
-      ?.asKind(SyntaxKind.ObjectLiteralExpression);
-    const importsProperty = decoratorArg
-      ?.getProperty("imports")
-      ?.asKind(SyntaxKind.PropertyAssignment);
-    const importsArray = importsProperty?.getInitializerIfKind(
-      SyntaxKind.ArrayLiteralExpression,
-    );
-
-    if (importsArray) {
-      importsArray.getElements().forEach((element) => {
-        if (element.getText().startsWith("LoggerModule")) {
-          importsArray.removeElement(element);
-        }
-      });
-    }
-  }
+  removeNestModuleImport(appModuleFile, "AppModule", "LoggerModule");
 
   const mainFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/main.ts"),
