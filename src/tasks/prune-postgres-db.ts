@@ -9,7 +9,8 @@ export async function prunePostgresDatabase(projectRoot: string) {
   const { pathExists, readJson, writeJson, remove, readFile, writeFile } =
     fsExtra;
 
-  // 1. Remove Postgres-specific dependencies from package.json
+  const envKeysToRemove = ["POSTGRES_URL"];
+
   const pkgPath = path.join(projectRoot, "package.json");
   if (await pathExists(pkgPath)) {
     const pkg = await readJson(pkgPath);
@@ -20,15 +21,27 @@ export async function prunePostgresDatabase(projectRoot: string) {
     console.log("  └─ Removed Postgres dependencies from package.json");
   }
 
-  // 2. Remove only the Postgres-specific directory/module file
-  // (Assuming your skeleton splits files into src/database/postgres.module.ts)
   await remove(path.join(projectRoot, "src/database/postgres.module.ts"));
   console.log("  └─ Deleted postgres.module.ts");
 
-  // 3. Surgical AST Adjustments
+  const envFiles = [".env", ".env.example"];
+  for (const file of envFiles) {
+    const envPath = path.join(projectRoot, file);
+    if (await pathExists(envPath)) {
+      const content = await readFile(envPath, "utf8");
+      const cleanLines = content
+        .split(/\r?\n/)
+        .filter(
+          (line) => !envKeysToRemove.some((key) => line.startsWith(`${key}=`)),
+        );
+
+      await writeFile(envPath, cleanLines.join("\n"), "utf8");
+      console.log(`  └─ Scrubbed Postgres keys from ${file}`);
+    }
+  }
+
   const project = new Project();
 
-  // --- Clean app.module.ts ---
   const appModuleFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/app.module.ts"),
   );
@@ -39,6 +52,7 @@ export async function prunePostgresDatabase(projectRoot: string) {
 
   const appModuleClass = appModuleFile.getClassOrThrow("AppModule");
   const moduleDecorator = appModuleClass.getDecoratorOrThrow("Module");
+
   // @ts-ignore
   const decoratorArg = moduleDecorator
     .getArguments()[0]
@@ -56,7 +70,6 @@ export async function prunePostgresDatabase(projectRoot: string) {
     }
   });
 
-  // --- Clean config.module.ts (Remove POSTGRES_URL validation line) ---
   const configModuleFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/config.module.ts"),
   );
@@ -67,7 +80,6 @@ export async function prunePostgresDatabase(projectRoot: string) {
     postgresUrlProperty.remove();
   }
 
-  // --- Clean app-config.service.ts (Remove postgresUrl getter) ---
   const configServiceFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/app-config.service.ts"),
   );
@@ -81,32 +93,22 @@ export async function prunePostgresDatabase(projectRoot: string) {
   await project.save();
   console.log("  └─ TS source files scrubbed of Postgres references.");
 
-  // 4. Surgical Docker Compose Pruning
   const dockerComposePath = path.join(projectRoot, "docker-compose.yml");
   if (await pathExists(dockerComposePath)) {
     const fileContent = await readFile(dockerComposePath, "utf8");
     const composeDoc = YAML.parseDocument(fileContent);
 
-    // Safely delete postgres service block
     if (composeDoc.hasIn(["services", "postgres"])) {
       composeDoc.deleteIn(["services", "postgres"]);
     }
 
-    // Safely delete associated postgres volume block
     if (composeDoc.hasIn(["volumes", "pgdata"])) {
       composeDoc.deleteIn(["volumes", "pgdata"]);
     }
 
-    // If no services are left in the docker-compose file, delete the file entirely
-    const services = composeDoc.get("services") as YAML.YAMLMap;
-    if (!services || services.items.length === 0) {
-      await remove(dockerComposePath);
-      console.log("  └─ Docker-compose.yml emptied and deleted.");
-    } else {
-      await writeFile(dockerComposePath, composeDoc.toString(), "utf8");
-      console.log(
-        "  └─ Removed postgres container configurations from docker-compose.yml",
-      );
-    }
+    await writeFile(dockerComposePath, composeDoc.toString(), "utf8");
+    console.log(
+      "  └─ Removed postgres container configurations from docker-compose.yml",
+    );
   }
 }
