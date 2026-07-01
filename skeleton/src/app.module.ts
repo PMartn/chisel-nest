@@ -5,6 +5,7 @@ import { MongoModule } from './database/mongo.module';
 import { LoggerModule } from 'pino-nestjs';
 import { AppConfigService } from './config/app-config.service';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -21,6 +22,14 @@ import { ConfigModule } from '@nestjs/config/dist/config.module';
             : undefined,
         },
       }),
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
     }),
   ],
 })
