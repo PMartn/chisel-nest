@@ -20,4 +20,8 @@ export class AppConfigService {
   get mongoUri(): string {
     return this.configService.get<string>('MONGO_URI')!;
   }
+
+  get isDevelopment(): boolean {
+    return this.configService.get<string>('NODE_ENV') === 'development';
+  }
 }
