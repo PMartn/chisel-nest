@@ -10,6 +10,7 @@ import { copySkeleton } from "./utils/copy-skeleton";
 import { prunePostgresDatabase } from "./tasks/prune-postgres-db";
 import { pruneDatabase } from "./tasks/prune-db";
 import { pruneMongoDatabase } from "./tasks/prune-mongo-db";
+import { pruneHelmet } from "./tasks/prune-helmet";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -102,7 +103,7 @@ async function startWebServer() {
       mongoEnabled,
       //mongoOrm,
       //usePinoLogger,
-      //useHelmet,
+      useHelmet,
       //useRateLimiting,
     }: GeneratorAnswers = answers;
 
@@ -119,6 +120,9 @@ async function startWebServer() {
         await prunePostgresDatabase(targetPath);
       } else if (!mongoEnabled) {
         await pruneMongoDatabase(targetPath);
+      }
+      if (!useHelmet) {
+        await pruneHelmet(targetPath);
       }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
