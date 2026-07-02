@@ -6,7 +6,13 @@ export class AppConfigService {
   constructor(private configService: ConfigService) {}
 
   get postgresUrl(): string {
-    return this.configService.get<string>('POSTGRES_URL')!;
+    const user = this.configService.get<string>('POSTGRES_USER');
+    const pass = this.configService.get<string>('POSTGRES_PASSWORD');
+    const host = this.configService.get<string>('POSTGRES_HOST');
+    const port = this.configService.get<number>('POSTGRES_PORT');
+    const db = this.configService.get<string>('POSTGRES_DB');
+
+    return `postgres://${user}:${pass}@${host}:${port}/${db}`;
   }
 
   get port(): number {
@@ -18,7 +24,13 @@ export class AppConfigService {
   }
 
   get mongoUri(): string {
-    return this.configService.get<string>('MONGO_URI')!;
+    const user = this.configService.get<string>('MONGO_ROOT_USER');
+    const pass = this.configService.get<string>('MONGO_ROOT_PASSWORD');
+    const host = this.configService.get<string>('MONGO_HOST');
+    const port = this.configService.get<number>('MONGO_PORT');
+    const db = this.configService.get<string>('MONGO_DB');
+
+    return `mongodb://${user}:${pass}@${host}:${port}/${db}?authSource=admin`;
   }
 
   get isDevelopment(): boolean {

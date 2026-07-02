@@ -7,15 +7,24 @@ import {
   pruneDockerCompose,
   removeImportBySpecifier,
   removeNestModuleImport,
-  removePropertyAssignmentByName,
+  removePropertyAssignmentsByNames,
   removeClassGetter,
 } from "./utils/prune-helpers";
 
 export async function prunePostgresDatabase(projectRoot: string) {
   console.log("✂️  Starting isolated Postgres database pruning operation...");
 
+  const envKeys = [
+    "POSTGRES_URL",
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_DB",
+  ];
+
   await pruneDependencies(projectRoot, ["@nestjs/typeorm", "typeorm", "pg"]);
-  await pruneEnvKeys(projectRoot, ["POSTGRES_URL"]);
+  await pruneEnvKeys(projectRoot, envKeys);
   await pruneDockerCompose(projectRoot, {
     services: ["postgres"],
     volumes: ["pgdata"],
@@ -37,7 +46,14 @@ export async function prunePostgresDatabase(projectRoot: string) {
   const configModuleFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/config.module.ts"),
   );
-  removePropertyAssignmentByName(configModuleFile, "POSTGRES_URL");
+  removePropertyAssignmentsByNames(configModuleFile, [
+    "POSTGRES_URL",
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_DB",
+  ]);
 
   const configServiceFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/app-config.service.ts"),

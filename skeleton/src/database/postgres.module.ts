@@ -10,7 +10,8 @@ import { AppConfigService } from '../config/app-config.service';
         type: 'postgres',
         url: configService.postgresUrl,
         autoLoadEntities: true,
-        synchronize: true, // TODO: Add option to toggle this
+        synchronize: configService.isDevelopment,
+        logging: configService.isDevelopment,
       }),
     }),
   ],

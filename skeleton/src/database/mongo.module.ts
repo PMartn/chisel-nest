@@ -8,6 +8,7 @@ import { AppConfigService } from '../config/app-config.service';
       inject: [AppConfigService],
       useFactory: (configService: AppConfigService) => ({
         uri: configService.mongoUri,
+        autoIndex: configService.isDevelopment,
       }),
     }),
   ],

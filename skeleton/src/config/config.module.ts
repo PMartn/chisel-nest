@@ -13,8 +13,18 @@ import * as Joi from 'joi';
           .valid('development', 'production', 'test')
           .default('development'),
         PORT: Joi.number().default(3000),
-        POSTGRES_URL: Joi.string().required(),
-        MONGO_URI: Joi.string().required(),
+
+        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_PASSWORD: Joi.string().required(),
+        POSTGRES_DB: Joi.string().required(),
+        POSTGRES_HOST: Joi.string().default('localhost'),
+        POSTGRES_PORT: Joi.number().default(5432),
+
+        MONGO_ROOT_USER: Joi.string().required(),
+        MONGO_ROOT_PASSWORD: Joi.string().required(),
+        MONGO_DB: Joi.string().required(),
+        MONGO_HOST: Joi.string().default('localhost'),
+        MONGO_PORT: Joi.number().default(27017),
       }),
     }),
   ],

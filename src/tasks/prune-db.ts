@@ -7,7 +7,7 @@ import {
   pruneDockerCompose,
   removeImportBySpecifier,
   removeNestModuleImport,
-  removePropertyAssignmentByName,
+  removePropertyAssignmentsByNames,
   removeClassGetter,
 } from "./utils/prune-helpers";
 
@@ -24,7 +24,20 @@ export async function pruneDatabase(projectRoot: string) {
     "mongoose",
   ]);
 
-  await pruneEnvKeys(projectRoot, ["POSTGRES_URL", "MONGO_URI"]);
+  const envKeys = [
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_DB",
+    "MONGO_ROOT_USER",
+    "MONGO_ROOT_PASSWORD",
+    "MONGO_DB",
+    "MONGO_HOST",
+    "MONGO_PORT",
+  ];
+
+  await pruneEnvKeys(projectRoot, envKeys);
 
   await pruneDockerCompose(projectRoot, {
     services: ["postgres", "mongodb"],
@@ -47,8 +60,7 @@ export async function pruneDatabase(projectRoot: string) {
   const configModuleFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/config.module.ts"),
   );
-  removePropertyAssignmentByName(configModuleFile, "POSTGRES_URL");
-  removePropertyAssignmentByName(configModuleFile, "MONGO_URI");
+  removePropertyAssignmentsByNames(configModuleFile, envKeys);
 
   const configServiceFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/app-config.service.ts"),

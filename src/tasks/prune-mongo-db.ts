@@ -7,15 +7,23 @@ import {
   pruneDockerCompose,
   removeImportBySpecifier,
   removeNestModuleImport,
-  removePropertyAssignmentByName,
   removeClassGetter,
+  removePropertyAssignmentsByNames,
 } from "./utils/prune-helpers";
 
 export async function pruneMongoDatabase(projectRoot: string) {
   console.log("✂️  Starting isolated MongoDB pruning operation...");
 
+  const envKeys = [
+    "MONGO_ROOT_USER",
+    "MONGO_ROOT_PASSWORD",
+    "MONGO_DB",
+    "MONGO_HOST",
+    "MONGO_PORT",
+  ];
+
   await pruneDependencies(projectRoot, ["@nestjs/mongoose", "mongoose"]);
-  await pruneEnvKeys(projectRoot, ["MONGO_URI"]);
+  await pruneEnvKeys(projectRoot, envKeys);
   await pruneDockerCompose(projectRoot, {
     services: ["mongodb"],
     volumes: ["mongodata"],
@@ -33,7 +41,7 @@ export async function pruneMongoDatabase(projectRoot: string) {
   const configModuleFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/config.module.ts"),
   );
-  removePropertyAssignmentByName(configModuleFile, "MONGO_URI");
+  removePropertyAssignmentsByNames(configModuleFile, envKeys);
 
   const configServiceFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/app-config.service.ts"),

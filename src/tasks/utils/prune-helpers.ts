@@ -116,16 +116,21 @@ export function removeNestModuleImport(
 }
 
 /**
- * Traverses an entire file recursively and deletes any property assignment key (e.g. MONGO_URI: Joi...)
+ * Traverses an entire file recursively and deletes any property assignment keys matching the provided list
  */
-export function removePropertyAssignmentByName(
+export function removePropertyAssignmentsByNames(
   sourceFile: SourceFile,
-  propertyName: string,
+  propertyNames: string[],
 ) {
-  const property = sourceFile
-    .getDescendantsOfKind(SyntaxKind.PropertyAssignment)
-    .find((p) => p.getName() === propertyName);
-  if (property) property.remove();
+  for (const name of propertyNames) {
+    const property = sourceFile
+      .getDescendantsOfKind(SyntaxKind.PropertyAssignment)
+      .find((p) => p.getName() === name);
+
+    if (property) {
+      property.remove();
+    }
+  }
 }
 
 /**
