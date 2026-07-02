@@ -15,6 +15,7 @@ import { prunePino } from "./tasks/prune-pino";
 import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
 import { pruneThrottler } from "./tasks/prune-throttler";
 import { updateSwaggerMetadata } from "./tasks/update-swagger-metadata";
+import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-module";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -125,6 +126,7 @@ async function startWebServer() {
         await pruneDatabase(targetPath);
       } else if (!postgresEnabled) {
         await prunePostgresDatabase(targetPath);
+        await prunePostgresFromUsersModule(targetPath);
       } else if (!mongoEnabled) {
         await pruneMongoDatabase(targetPath);
       }

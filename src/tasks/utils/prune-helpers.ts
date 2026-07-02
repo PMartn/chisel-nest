@@ -1,7 +1,7 @@
 import * as path from "path";
 import fsExtra from "fs-extra";
 import * as YAML from "yaml";
-import { SyntaxKind, type SourceFile } from "ts-morph";
+import { ObjectLiteralExpression, SyntaxKind, type SourceFile } from "ts-morph";
 
 const { pathExists, readJson, writeJson, readFile, writeFile } = fsExtra;
 
@@ -91,28 +91,8 @@ export function removeNestModuleImport(
   className: string,
   moduleName: string,
 ) {
-  const targetClass = sourceFile.getClass(className);
-  const decorator = targetClass?.getDecorator("Module");
-  if (!decorator) return;
-
-  const decoratorArg = decorator
-    .getArguments()[0]
-    ?.asKind(SyntaxKind.ObjectLiteralExpression);
-  const importsProperty = decoratorArg
-    ?.getProperty("imports")
-    ?.asKind(SyntaxKind.PropertyAssignment);
-  const importsArray = importsProperty?.getInitializerIfKind(
-    SyntaxKind.ArrayLiteralExpression,
-  );
-
-  if (importsArray) {
-    importsArray.getElements().forEach((element) => {
-      // Changed from === to .startsWith() to capture dynamic .forRoot() modules
-      if (element.getText().startsWith(moduleName)) {
-        importsArray.removeElement(element);
-      }
-    });
-  }
+  const args = getDecoratorArgs(sourceFile, className, "Module");
+  removeElementFromDecoratorArray(args, "imports", moduleName, false);
 }
 
 /**
@@ -144,4 +124,68 @@ export function removeClassGetter(
   const targetClass = sourceFile.getClass(className);
   const getter = targetClass?.getGetAccessor(getterName);
   if (getter) getter.remove();
+}
+
+/**
+ * Updates the 'useClass' value inside a specific provider declaration token block.
+ */
+export function updateProviderUseClass(
+  sourceFile: SourceFile,
+  providerName: string,
+  targetClassName: string,
+): void {
+  const providerVar = sourceFile.getVariableDeclaration(providerName);
+  if (providerVar) {
+    const initializer = providerVar.getInitializerIfKind(
+      SyntaxKind.ObjectLiteralExpression,
+    );
+    const useClassProp = initializer?.getProperty("useClass");
+    if (useClassProp && useClassProp.isKind(SyntaxKind.PropertyAssignment)) {
+      useClassProp.setInitializer(targetClassName);
+    }
+  }
+}
+
+/**
+ * Gets the argument configuration object from a NestJS class decorator (e.g., @Module).
+ */
+export function getDecoratorArgs(
+  sourceFile: SourceFile,
+  className: string,
+  decoratorName: string,
+): ObjectLiteralExpression {
+  const targetClass = sourceFile.getClassOrThrow(className);
+  const decorator = targetClass.getDecoratorOrThrow(decoratorName);
+  // @ts-ignore
+  return decorator
+    .getArguments()[0]
+    .asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+}
+
+/**
+ * Removes an element from a specific array property matching a specific text search substring.
+ */
+export function removeElementFromDecoratorArray(
+  decoratorArgs: ObjectLiteralExpression,
+  propertyName: "imports" | "providers" | "controllers" | "exports",
+  searchSubstring: string,
+  exactMatch = false,
+): void {
+  const prop = decoratorArgs
+    .getProperty(propertyName)
+    ?.asKindOrThrow(SyntaxKind.PropertyAssignment);
+  const array = prop
+    ?.getInitializer()
+    ?.asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+
+  const elementToRemove = array?.getElements().find((el) => {
+    const text = el.getText();
+    return exactMatch
+      ? text === searchSubstring
+      : text.includes(searchSubstring);
+  });
+
+  if (elementToRemove) {
+    array?.removeElement(elementToRemove);
+  }
 }
