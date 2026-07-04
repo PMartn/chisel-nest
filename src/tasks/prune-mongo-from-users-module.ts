@@ -5,7 +5,7 @@ import {
   getDecoratorArgs,
   removeElementFromDecoratorArray,
   updateProviderUseClass,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function pruneMongoFromUsersModule(projectRoot: string) {
   console.log("🧹 Pruning MongoDB infrastructure from Users module...");

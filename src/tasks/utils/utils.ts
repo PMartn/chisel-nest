@@ -1,7 +1,12 @@
 import * as path from "path";
 import fsExtra from "fs-extra";
 import * as YAML from "yaml";
-import { ObjectLiteralExpression, SyntaxKind, type SourceFile } from "ts-morph";
+import {
+  ObjectLiteralExpression,
+  Project,
+  SyntaxKind,
+  type SourceFile,
+} from "ts-morph";
 
 const { pathExists, readJson, writeJson, readFile, writeFile } = fsExtra;
 
@@ -188,4 +193,45 @@ export function removeElementFromDecoratorArray(
   if (elementToRemove) {
     array?.removeElement(elementToRemove);
   }
+}
+
+export async function registerModuleWithApp(
+  projectRoot: string,
+  moduleClassName: string,
+  importPath: string,
+): Promise<void> {
+  const project = new Project();
+  const appModulePath = path.join(projectRoot, "src/app.module.ts");
+  const sourceFile = project.addSourceFileAtPath(appModulePath);
+
+  const existingImport = sourceFile.getImportDeclaration(
+    (imp) => imp.getModuleSpecifierValue() === importPath,
+  );
+
+  if (!existingImport) {
+    sourceFile.addImportDeclaration({
+      namedImports: [moduleClassName],
+      moduleSpecifier: importPath,
+    });
+  }
+
+  const moduleArgs = getDecoratorArgs(sourceFile, "AppModule", "Module");
+  const importsProp = moduleArgs
+    .getProperty("imports")
+    ?.asKindOrThrow(SyntaxKind.PropertyAssignment);
+  const importsArray = importsProp
+    ?.getInitializer()
+    ?.asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+
+  const alreadyImported = importsArray
+    ?.getElements()
+    .some((el) => el.getText() === moduleClassName);
+
+  if (!alreadyImported) {
+    importsArray?.addElement(moduleClassName);
+  }
+
+  sourceFile.formatText();
+  await project.save();
+  console.log(`  └─ Registered ${moduleClassName} inside app.module.ts`);
 }

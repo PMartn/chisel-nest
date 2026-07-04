@@ -9,7 +9,7 @@ import {
   removeNestModuleImport,
   removeClassGetter,
   removePropertyAssignmentsByNames,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function pruneMongoDatabase(projectRoot: string) {
   console.log("✂️  Starting isolated MongoDB pruning operation...");

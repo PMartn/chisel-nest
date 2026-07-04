@@ -9,7 +9,7 @@ import {
   removeNestModuleImport,
   removePropertyAssignmentsByNames,
   removeClassGetter,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function prunePostgresDatabase(projectRoot: string) {
   console.log("✂️  Starting isolated Postgres database pruning operation...");

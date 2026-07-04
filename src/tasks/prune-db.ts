@@ -9,7 +9,7 @@ import {
   removeNestModuleImport,
   removePropertyAssignmentsByNames,
   removeClassGetter,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function pruneDatabase(projectRoot: string) {
   console.log(

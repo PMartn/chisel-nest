@@ -4,7 +4,7 @@ import {
   pruneDependencies,
   removeImportBySpecifier,
   removeNestModuleImport,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function prunePino(projectRoot: string) {
   console.log("✂️  Starting Pino Logger pruning operation...");

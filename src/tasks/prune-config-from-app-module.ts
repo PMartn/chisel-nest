@@ -1,4 +1,4 @@
-import { removeImportBySpecifier } from "./utils/prune-helpers";
+import { removeImportBySpecifier } from "./utils/utils";
 import { Project } from "ts-morph";
 import * as path from "path";
 

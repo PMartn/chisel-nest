@@ -5,7 +5,7 @@ import {
   updateProviderUseClass,
   getDecoratorArgs,
   removeElementFromDecoratorArray,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function prunePostgresFromUsersModule(projectRoot: string) {
   console.log("🧹 Pruning PostgreSQL infrastructure from Users module...");

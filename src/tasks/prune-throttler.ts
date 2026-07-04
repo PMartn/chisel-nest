@@ -4,7 +4,7 @@ import {
   pruneDependencies,
   removeImportBySpecifier,
   removeNestModuleImport,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function pruneThrottler(projectRoot: string) {
   console.log("✂️  Starting Throttler pruning operation...");

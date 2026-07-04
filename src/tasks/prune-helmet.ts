@@ -3,7 +3,7 @@ import { Project } from "ts-morph";
 import {
   pruneDependencies,
   removeImportBySpecifier,
-} from "./utils/prune-helpers";
+} from "./utils/utils";
 
 export async function pruneHelmet(projectRoot: string) {
   console.log("✂️  Starting Helmet pruning operation...");
