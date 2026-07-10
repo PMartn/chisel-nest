@@ -16,6 +16,7 @@ import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
 import { pruneThrottler } from "./tasks/prune-throttler";
 import { updateSwaggerMetadata } from "./tasks/update-swagger-metadata";
 import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-module";
+import { generateFeature } from "./tasks/generate-module";
 
 export interface GeneratorAnswers {
   projectName: string;
@@ -143,6 +144,8 @@ async function startWebServer() {
       if (shouldRemoveConfigFromAppAppModule) {
         await pruneConfigFromAppModule(targetPath);
       }
+
+      await generateFeature(targetPath, "Product", "postgres");
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });
