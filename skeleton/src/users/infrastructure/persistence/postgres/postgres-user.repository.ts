@@ -28,4 +28,9 @@ export class PostgresUserRepository implements UserRepository {
     const entity = await this.repository.findOneBy({ email });
     return entity ? UserMapper.toDomain(entity) : null;
   }
+
+  async findAll(): Promise<User[]> {
+    const entities = await this.repository.find();
+    return entities.map((entity) => UserMapper.toDomain(entity));
+  }
 }

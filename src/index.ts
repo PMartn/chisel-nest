@@ -16,6 +16,8 @@ import { pruneConfigFromAppModule } from "./tasks/prune-config-from-app-module";
 import { pruneThrottler } from "./tasks/prune-throttler";
 import { updateSwaggerMetadata } from "./tasks/update-swagger-metadata";
 import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-module";
+import { pruneMongoFromUsersModule } from "./tasks/prune-mongo-from-users-module";
+import { pruneUsersModule } from "./tasks/prune-users-module";
 import { generateFeature } from "./tasks/generate-module";
 
 export interface GeneratorAnswers {
@@ -125,11 +127,13 @@ async function startWebServer() {
       await updateSwaggerMetadata(targetPath, projectName);
       if (!postgresEnabled && !mongoEnabled) {
         await pruneDatabase(targetPath);
+        await pruneUsersModule(targetPath);
       } else if (!postgresEnabled) {
         await prunePostgresDatabase(targetPath);
         await prunePostgresFromUsersModule(targetPath);
       } else if (!mongoEnabled) {
         await pruneMongoDatabase(targetPath);
+        await pruneMongoFromUsersModule(targetPath);
       }
       if (!usePinoLogger) {
         await prunePino(targetPath);
@@ -145,7 +149,10 @@ async function startWebServer() {
         await pruneConfigFromAppModule(targetPath);
       }
 
-      await generateFeature(targetPath, "Product", "postgres");
+      if (postgresEnabled || mongoEnabled) {
+        const featureDatabase = postgresEnabled ? "postgres" : "mongo";
+        await generateFeature(targetPath, "Product", featureDatabase);
+      }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });
