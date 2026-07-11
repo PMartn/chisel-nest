@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { __PASCAL_NAME__Repository } from "./domain/ports/__KEBAB_NAME__-repository.port";
+import { __PASCAL_NAME__ServicePort } from "./application/ports/__KEBAB_NAME__-service.port";
+import { __PASCAL_NAME__Service } from "./application/__KEBAB_NAME__.service";
 import {
   __PASCAL_NAME__Doc,
   __PASCAL_NAME__Schema,
@@ -21,7 +23,11 @@ import { __PLURAL_PASCAL__Controller } from "./infrastructure/http/__PLURAL_KEBA
       provide: __PASCAL_NAME__Repository,
       useClass: Mongo__PASCAL_NAME__Repository,
     },
+    {
+      provide: __PASCAL_NAME__ServicePort,
+      useClass: __PASCAL_NAME__Service,
+    },
   ],
-  exports: [__PASCAL_NAME__Repository],
+  exports: [__PASCAL_NAME__ServicePort],
 })
 export class __PLURAL_PASCAL__Module {}

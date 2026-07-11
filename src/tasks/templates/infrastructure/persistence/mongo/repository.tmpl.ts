@@ -31,4 +31,9 @@ export class Mongo__PASCAL_NAME__Repository implements __PASCAL_NAME__Repository
     const doc = await this.model.findOne({ id }).exec();
     return doc ? __PASCAL_NAME__Mapper.toDomain(doc) : null;
   }
+
+  async findAll(): Promise<__PASCAL_NAME__[]> {
+    const docs = await this.model.find().exec();
+    return docs.map((doc) => __PASCAL_NAME__Mapper.toDomain(doc));
+  }
 }

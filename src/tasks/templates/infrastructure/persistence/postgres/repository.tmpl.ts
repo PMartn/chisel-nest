@@ -23,4 +23,9 @@ export class Postgres__PASCAL_NAME__Repository implements __PASCAL_NAME__Reposit
     const entity = await this.repository.findOneBy({ id });
     return entity ? __PASCAL_NAME__Mapper.toDomain(entity) : null;
   }
+
+  async findAll(): Promise<__PASCAL_NAME__[]> {
+    const entities = await this.repository.find();
+    return entities.map((entity) => __PASCAL_NAME__Mapper.toDomain(entity));
+  }
 }

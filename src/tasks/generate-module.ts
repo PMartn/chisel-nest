@@ -57,8 +57,9 @@ export async function generateFeature(
     plural_pascal: names.pluralPascal,
   };
 
-  // 1. Shared core domain blueprint maps
+  // 1. Shared core domain, application and http blueprint maps
   const fileMappings: Record<string, string> = {
+    // Domain layer
     [path.join(templateBase, "domain", "model.tmpl.ts")]: path.join(
       targetDir,
       "domain",
@@ -71,6 +72,37 @@ export async function generateFeature(
       "ports",
       `${names.kebab}-repository.port.ts`,
     ),
+    [path.join(templateBase, "domain", "error.tmpl.ts")]: path.join(
+      targetDir,
+      "domain",
+      "errors",
+      `${names.kebab}-not-found.error.ts`,
+    ),
+    // Application layer
+    [path.join(templateBase, "application", "service.port.tmpl.ts")]: path.join(
+      targetDir,
+      "application",
+      "ports",
+      `${names.kebab}-service.port.ts`,
+    ),
+    [path.join(templateBase, "application", "create-command.tmpl.ts")]:
+      path.join(
+        targetDir,
+        "application",
+        "dto",
+        `create-${names.kebab}.command.ts`,
+      ),
+    [path.join(templateBase, "application", "service.tmpl.ts")]: path.join(
+      targetDir,
+      "application",
+      `${names.kebab}.service.ts`,
+    ),
+    [path.join(templateBase, "application", "service.spec.tmpl.ts")]: path.join(
+      targetDir,
+      "application",
+      `${names.kebab}.service.spec.ts`,
+    ),
+    // Infrastructure — HTTP layer
     [path.join(templateBase, "infrastructure", "http", "controller.tmpl.ts")]:
       path.join(
         targetDir,
@@ -78,6 +110,32 @@ export async function generateFeature(
         "http",
         `${names.pluralKebab}.controller.ts`,
       ),
+    [path.join(
+      templateBase,
+      "infrastructure",
+      "http",
+      "dto",
+      "create-request.tmpl.ts",
+    )]: path.join(
+      targetDir,
+      "infrastructure",
+      "http",
+      "dto",
+      `create-${names.kebab}.request.dto.ts`,
+    ),
+    [path.join(
+      templateBase,
+      "infrastructure",
+      "http",
+      "dto",
+      "response.tmpl.ts",
+    )]: path.join(
+      targetDir,
+      "infrastructure",
+      "http",
+      "dto",
+      `${names.kebab}.response.dto.ts`,
+    ),
   };
 
   // 2. Database infrastructure layer map assignments
