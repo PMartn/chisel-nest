@@ -11,6 +11,7 @@ import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
 import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
+import { tokens } from "./theme";
 import type { GeneratorAnswers } from "../../index";
 
 export default function App() {
@@ -91,7 +92,7 @@ export default function App() {
         >
           🚀 Scaffold Complete!
         </Typography>
-        <Typography sx={{ color: "#94a3b8" }}>
+        <Typography sx={{ color: "text.secondary" }}>
           Your project has been successfully set up. You can close this tab and
           return to the terminal.
         </Typography>
@@ -105,11 +106,12 @@ export default function App() {
         sx={{
           marginTop: 6,
           padding: 4,
-          background: "#1e293b",
-          color: "#fff",
+          bgcolor: "background.paper",
+          color: "text.primary",
           borderRadius: 4,
           boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
-          border: "1px solid #334155",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography
@@ -117,11 +119,11 @@ export default function App() {
           component="h1"
           gutterBottom
           sx={{
-            color: "#818cf8",
+            color: "primary.main",
             fontWeight: "bold",
             textAlign: "center",
             mb: 3,
-            background: "linear-gradient(90deg, #818cf8 0%, #a78bfa 100%)",
+            background: tokens.gradients.title,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
@@ -184,10 +186,10 @@ export default function App() {
             variant="contained"
             size="large"
             sx={{
-              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              background: tokens.gradients.submit,
               color: "#fff",
               "&:hover": {
-                background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
+                background: tokens.gradients.submitHover,
               },
               padding: "12px",
               fontWeight: "bold",

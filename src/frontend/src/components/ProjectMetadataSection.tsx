@@ -1,4 +1,3 @@
-
 import { Box, Button, Typography } from "@mui/material";
 import { StyledTextField } from "./FormControls";
 
@@ -41,8 +40,8 @@ export const ProjectMetadataSection = ({
           variant="outlined"
           onClick={() => setPickerOpen(true)}
           sx={{
-            color: "#818cf8",
-            borderColor: "#4f46e5",
+            color: "primary.main",
+            borderColor: "primary.dark",
             minWidth: "100px",
             "&:hover": { borderColor: "#c084fc", background: "#1e1b4b" },
           }}
@@ -50,7 +49,7 @@ export const ProjectMetadataSection = ({
           Browse...
         </Button>
       </Box>
-      <Typography variant="caption" sx={{ color: "#94a3b8", pl: 1 }}>
+      <Typography variant="caption" sx={{ color: "text.secondary", pl: 1 }}>
         Leave blank to create project in the server's working directory.
       </Typography>
     </Box>

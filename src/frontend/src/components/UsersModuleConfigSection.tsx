@@ -33,7 +33,7 @@ export const UsersModuleConfigSection = ({
         />
 
         {!anyEnabled && (
-          <Typography variant="caption" sx={{ color: "#64748b", ml: 3.5 }}>
+          <Typography variant="caption" sx={{ color: "text.disabled", ml: 3.5 }}>
             Select at least one database to include a Users module.
           </Typography>
         )}
@@ -45,7 +45,8 @@ export const UsersModuleConfigSection = ({
               display: "flex",
               flexDirection: "column",
               gap: 2,
-              borderLeft: "2px solid #334155",
+              borderLeft: "2px solid",
+              borderColor: "divider",
               pl: 2,
             }}
           >
@@ -62,7 +63,7 @@ export const UsersModuleConfigSection = ({
                 ]}
               />
             ) : (
-              <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
                 Users will be stored in {singleTarget}.
               </Typography>
             )}

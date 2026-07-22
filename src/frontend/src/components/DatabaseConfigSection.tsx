@@ -37,7 +37,8 @@ export const DatabaseConfigSection = ({
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            borderLeft: "2px solid #334155",
+            borderLeft: "2px solid",
+            borderColor: "divider",
             pl: 2,
           }}
         >
@@ -54,7 +55,7 @@ export const DatabaseConfigSection = ({
       )}
     </Box>
 
-    <Divider sx={{ borderColor: "#334155" }} />
+    <Divider />
 
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       <StyledCheckbox
@@ -70,7 +71,8 @@ export const DatabaseConfigSection = ({
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            borderLeft: "2px solid #334155",
+            borderLeft: "2px solid",
+            borderColor: "divider",
             pl: 2,
           }}
         >

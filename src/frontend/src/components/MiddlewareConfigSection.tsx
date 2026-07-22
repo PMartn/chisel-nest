@@ -1,4 +1,3 @@
-
 import { FormCard, StyledCheckbox } from "./FormControls";
 
 interface MiddlewareConfigSectionProps {
