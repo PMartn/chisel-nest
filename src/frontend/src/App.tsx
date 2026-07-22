@@ -9,6 +9,7 @@ import {
 import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
+import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
 import type { GeneratorAnswers } from "../../index";
 
@@ -19,6 +20,10 @@ export default function App() {
   const [postgresOrm, setPostgresOrm] = useState("TypeORM");
   const [includeMongo, setIncludeMongo] = useState(false);
   const [mongoOrm, setMongoOrm] = useState("Mongoose");
+  const [includeUsersModule, setIncludeUsersModule] = useState(true);
+  const [usersModuleLocation, setUsersModuleLocation] = useState<
+    "postgres" | "mongo"
+  >("postgres");
   const [usePinoLogger, setUsePinoLogger] = useState(true);
   const [useHelmet, setUseHelmet] = useState(true);
   const [useRateLimiting, setUseRateLimiting] = useState(true);
@@ -30,6 +35,16 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
 
+    const anyDatabase = includePostgres || includeMongo;
+    let usersModuleDatabase: "postgres" | "mongo" | "none";
+    if (!anyDatabase || !includeUsersModule) {
+      usersModuleDatabase = "none";
+    } else if (includePostgres && includeMongo) {
+      usersModuleDatabase = usersModuleLocation;
+    } else {
+      usersModuleDatabase = includePostgres ? "postgres" : "mongo";
+    }
+
     const payload: GeneratorAnswers = {
       projectName,
       destinationPath: destinationPath.trim(),
@@ -37,6 +52,7 @@ export default function App() {
       postgresOrm,
       mongoEnabled: includeMongo,
       mongoOrm,
+      usersModuleDatabase,
       usePinoLogger,
       useHelmet,
       useRateLimiting,
@@ -142,6 +158,15 @@ export default function App() {
             setIncludeMongo={setIncludeMongo}
             mongoOrm={mongoOrm}
             setMongoOrm={setMongoOrm}
+          />
+
+          <UsersModuleConfigSection
+            includePostgres={includePostgres}
+            includeMongo={includeMongo}
+            includeUsersModule={includeUsersModule}
+            setIncludeUsersModule={setIncludeUsersModule}
+            usersModuleLocation={usersModuleLocation}
+            setUsersModuleLocation={setUsersModuleLocation}
           />
 
           <MiddlewareConfigSection

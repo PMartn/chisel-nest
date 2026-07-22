@@ -27,6 +27,7 @@ export interface GeneratorAnswers {
   postgresOrm: string;
   mongoEnabled: boolean;
   mongoOrm: string;
+  usersModuleDatabase: "postgres" | "mongo" | "none";
   usePinoLogger: boolean;
   useHelmet: boolean;
   useRateLimiting: boolean;
@@ -110,6 +111,7 @@ async function startWebServer() {
       //postgresOrm,
       mongoEnabled,
       //mongoOrm,
+      usersModuleDatabase,
       usePinoLogger,
       useHelmet,
       useRateLimiting,
@@ -125,15 +127,24 @@ async function startWebServer() {
       const shouldRemoveConfigFromAppAppModule = !usePinoLogger;
 
       await updateSwaggerMetadata(targetPath, projectName);
+      // 1. Prune database infrastructure for any DB the user did not select.
       if (!postgresEnabled && !mongoEnabled) {
         await pruneDatabase(targetPath);
-        await pruneUsersModule(targetPath);
       } else if (!postgresEnabled) {
         await prunePostgresDatabase(targetPath);
-        await prunePostgresFromUsersModule(targetPath);
       } else if (!mongoEnabled) {
         await pruneMongoDatabase(targetPath);
+      }
+
+      // 2. Place (or remove) the Users module based on the chosen target.
+      //    When kept, the module lives on exactly one database, so the other
+      //    database's persistence is stripped out of it.
+      if (usersModuleDatabase === "none") {
+        await pruneUsersModule(targetPath);
+      } else if (usersModuleDatabase === "postgres") {
         await pruneMongoFromUsersModule(targetPath);
+      } else {
+        await prunePostgresFromUsersModule(targetPath);
       }
       if (!usePinoLogger) {
         await prunePino(targetPath);
