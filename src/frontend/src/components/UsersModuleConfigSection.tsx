@@ -1,23 +1,18 @@
 import { Box, Typography } from "@mui/material";
 import { FormCard, StyledCheckbox, StyledSelect } from "./FormControls";
+import type { FormState, UpdateForm } from "../formState";
 
 interface UsersModuleConfigSectionProps {
-  includePostgres: boolean;
-  includeMongo: boolean;
-  includeUsersModule: boolean;
-  setIncludeUsersModule: (val: boolean) => void;
-  usersModuleLocation: "postgres" | "mongo";
-  setUsersModuleLocation: (val: "postgres" | "mongo") => void;
+  config: FormState;
+  update: UpdateForm;
 }
 
 export const UsersModuleConfigSection = ({
-  includePostgres,
-  includeMongo,
-  includeUsersModule,
-  setIncludeUsersModule,
-  usersModuleLocation,
-  setUsersModuleLocation,
+  config,
+  update,
 }: UsersModuleConfigSectionProps) => {
+  const { includePostgres, includeMongo, includeUsersModule, usersModuleLocation } =
+    config;
   const anyEnabled = includePostgres || includeMongo;
   const bothEnabled = includePostgres && includeMongo;
   const singleTarget = includePostgres ? "PostgreSQL" : "MongoDB";
@@ -28,7 +23,7 @@ export const UsersModuleConfigSection = ({
         <StyledCheckbox
           label="Include a Users module"
           checked={anyEnabled && includeUsersModule}
-          onChange={setIncludeUsersModule}
+          onChange={(val) => update({ includeUsersModule: val })}
           disabled={!anyEnabled}
         />
 
@@ -55,7 +50,7 @@ export const UsersModuleConfigSection = ({
                 label="Store users in"
                 value={usersModuleLocation}
                 onChange={(val) =>
-                  setUsersModuleLocation(val as "postgres" | "mongo")
+                  update({ usersModuleLocation: val as "postgres" | "mongo" })
                 }
                 options={[
                   { value: "postgres", label: "PostgreSQL" },

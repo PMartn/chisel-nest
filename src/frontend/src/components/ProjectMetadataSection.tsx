@@ -1,27 +1,24 @@
 import { Box, Button, Typography } from "@mui/material";
 import { StyledTextField } from "./FormControls";
+import type { FormState, UpdateForm } from "../formState";
 
 interface ProjectMetadataSectionProps {
-  projectName: string;
-  setProjectName: (val: string) => void;
-  destinationPath: string;
-  setDestinationPath: (val: string) => void;
+  config: FormState;
+  update: UpdateForm;
   setPickerOpen: (val: boolean) => void;
 }
 
 export const ProjectMetadataSection = ({
-  projectName,
-  setProjectName,
-  destinationPath,
-  setDestinationPath,
+  config,
+  update,
   setPickerOpen,
 }: ProjectMetadataSectionProps) => (
   <>
     <StyledTextField
       label="Project Name"
       variant="outlined"
-      value={projectName}
-      onChange={(e) => setProjectName(e.target.value)}
+      value={config.projectName}
+      onChange={(e) => update({ projectName: e.target.value })}
       fullWidth
       required
     />
@@ -31,8 +28,8 @@ export const ProjectMetadataSection = ({
         <StyledTextField
           label="Destination Path"
           variant="outlined"
-          value={destinationPath}
-          onChange={(e) => setDestinationPath(e.target.value)}
+          value={config.destinationPath}
+          onChange={(e) => update({ destinationPath: e.target.value })}
           fullWidth
           placeholder="Defaults to current folder"
         />

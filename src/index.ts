@@ -19,25 +19,7 @@ import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-
 import { pruneMongoFromUsersModule } from "./tasks/prune-mongo-from-users-module";
 import { pruneUsersModule } from "./tasks/prune-users-module";
 import { generateFeature } from "./tasks/generate-module";
-
-export interface CustomModule {
-  name: string;
-  database: "postgres" | "mongo";
-}
-
-export interface GeneratorAnswers {
-  projectName: string;
-  destinationPath: string;
-  postgresEnabled: boolean;
-  postgresOrm: string;
-  mongoEnabled: boolean;
-  mongoOrm: string;
-  usersModuleDatabase: "postgres" | "mongo" | "none";
-  modules: CustomModule[];
-  usePinoLogger: boolean;
-  useHelmet: boolean;
-  useRateLimiting: boolean;
-}
+import type { GeneratorAnswers } from "./shared/types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

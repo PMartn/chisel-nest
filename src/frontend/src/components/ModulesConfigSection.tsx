@@ -2,27 +2,27 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { FormCard, StyledTextField, StyledSelect } from "./FormControls";
-import type { CustomModule } from "../../../index";
+import type { CustomModule } from "../../../shared/types";
+import type { FormState, UpdateForm } from "../formState";
 
 interface ModulesConfigSectionProps {
-  includePostgres: boolean;
-  includeMongo: boolean;
-  modules: CustomModule[];
-  setModules: (modules: CustomModule[]) => void;
+  config: FormState;
+  update: UpdateForm;
 }
 
 export const ModulesConfigSection = ({
-  includePostgres,
-  includeMongo,
-  modules,
-  setModules,
+  config,
+  update,
 }: ModulesConfigSectionProps) => {
+  const { includePostgres, includeMongo, modules } = config;
   const anyEnabled = includePostgres || includeMongo;
   const bothEnabled = includePostgres && includeMongo;
   const singleTarget = includePostgres ? "PostgreSQL" : "MongoDB";
   const defaultDatabase: "postgres" | "mongo" = includePostgres
     ? "postgres"
     : "mongo";
+
+  const setModules = (next: CustomModule[]) => update({ modules: next });
 
   const addModule = () =>
     setModules([...modules, { name: "", database: defaultDatabase }]);

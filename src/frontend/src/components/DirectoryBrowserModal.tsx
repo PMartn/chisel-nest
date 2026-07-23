@@ -31,6 +31,15 @@ interface DirectoryBrowserProps {
   onSelect: (path: string) => void;
 }
 
+interface BrowseResponse {
+  currentPath: string;
+  parentPath: string | null;
+  subdirectories: string[];
+  drives?: string[];
+  homeDir: string;
+  projectDir: string;
+}
+
 export default function DirectoryBrowserModal({
   open,
   onClose,
@@ -56,10 +65,10 @@ export default function DirectoryBrowserModal({
         `/api/browse?path=${encodeURIComponent(targetPath)}`,
       );
       if (!res.ok) {
-        const data = await res.json();
+        const data: { error?: string } = await res.json();
         throw new Error(data.error || "Failed to read directory");
       }
-      const data = await res.json();
+      const data: BrowseResponse = await res.json();
       setCurrentPath(data.currentPath);
       setPathInput(data.currentPath);
       setParentPath(data.parentPath);
@@ -67,8 +76,10 @@ export default function DirectoryBrowserModal({
       setDrives(data.drives || []);
       setHomeDir(data.homeDir);
       setProjectDir(data.projectDir);
-    } catch (err: any) {
-      setError(err.message || "Failed to read folder contents.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to read folder contents.",
+      );
     } finally {
       setLoading(false);
     }

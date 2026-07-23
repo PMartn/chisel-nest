@@ -1,37 +1,30 @@
 import { FormCard, StyledCheckbox } from "./FormControls";
+import type { FormState, UpdateForm } from "../formState";
 
 interface MiddlewareConfigSectionProps {
-  usePinoLogger: boolean;
-  setUsePinoLogger: (val: boolean) => void;
-  useHelmet: boolean;
-  setUseHelmet: (val: boolean) => void;
-  useRateLimiting: boolean;
-  setUseRateLimiting: (val: boolean) => void;
+  config: FormState;
+  update: UpdateForm;
 }
 
 export const MiddlewareConfigSection = ({
-  usePinoLogger,
-  setUsePinoLogger,
-  useHelmet,
-  setUseHelmet,
-  useRateLimiting,
-  setUseRateLimiting,
+  config,
+  update,
 }: MiddlewareConfigSectionProps) => (
   <FormCard title="Security & Logging Middleware" gap={1.5}>
     <StyledCheckbox
       label="Enable Pino Logger"
-      checked={usePinoLogger}
-      onChange={setUsePinoLogger}
+      checked={config.usePinoLogger}
+      onChange={(val) => update({ usePinoLogger: val })}
     />
     <StyledCheckbox
       label="Enable Helmet (HTTP Header Security)"
-      checked={useHelmet}
-      onChange={setUseHelmet}
+      checked={config.useHelmet}
+      onChange={(val) => update({ useHelmet: val })}
     />
     <StyledCheckbox
       label="Enable Rate Limiting protection"
-      checked={useRateLimiting}
-      onChange={setUseRateLimiting}
+      checked={config.useRateLimiting}
+      onChange={(val) => update({ useRateLimiting: val })}
     />
   </FormCard>
 );
