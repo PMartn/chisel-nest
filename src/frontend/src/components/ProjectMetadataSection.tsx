@@ -1,30 +1,32 @@
-
 import { Box, Button, Typography } from "@mui/material";
 import { StyledTextField } from "./FormControls";
+import { projectNameError } from "../validation";
+import type { FormState, UpdateForm } from "../formState";
 
 interface ProjectMetadataSectionProps {
-  projectName: string;
-  setProjectName: (val: string) => void;
-  destinationPath: string;
-  setDestinationPath: (val: string) => void;
+  config: FormState;
+  update: UpdateForm;
   setPickerOpen: (val: boolean) => void;
 }
 
 export const ProjectMetadataSection = ({
-  projectName,
-  setProjectName,
-  destinationPath,
-  setDestinationPath,
+  config,
+  update,
   setPickerOpen,
-}: ProjectMetadataSectionProps) => (
+}: ProjectMetadataSectionProps) => {
+  const nameError = projectNameError(config.projectName);
+
+  return (
   <>
     <StyledTextField
       label="Project Name"
       variant="outlined"
-      value={projectName}
-      onChange={(e) => setProjectName(e.target.value)}
+      value={config.projectName}
+      onChange={(e) => update({ projectName: e.target.value })}
       fullWidth
       required
+      error={Boolean(nameError)}
+      helperText={nameError ?? undefined}
     />
 
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -32,8 +34,8 @@ export const ProjectMetadataSection = ({
         <StyledTextField
           label="Destination Path"
           variant="outlined"
-          value={destinationPath}
-          onChange={(e) => setDestinationPath(e.target.value)}
+          value={config.destinationPath}
+          onChange={(e) => update({ destinationPath: e.target.value })}
           fullWidth
           placeholder="Defaults to current folder"
         />
@@ -41,8 +43,8 @@ export const ProjectMetadataSection = ({
           variant="outlined"
           onClick={() => setPickerOpen(true)}
           sx={{
-            color: "#818cf8",
-            borderColor: "#4f46e5",
+            color: "primary.main",
+            borderColor: "primary.dark",
             minWidth: "100px",
             "&:hover": { borderColor: "#c084fc", background: "#1e1b4b" },
           }}
@@ -50,9 +52,10 @@ export const ProjectMetadataSection = ({
           Browse...
         </Button>
       </Box>
-      <Typography variant="caption" sx={{ color: "#94a3b8", pl: 1 }}>
+      <Typography variant="caption" sx={{ color: "text.secondary", pl: 1 }}>
         Leave blank to create project in the server's working directory.
       </Typography>
     </Box>
   </>
-);
+  );
+};

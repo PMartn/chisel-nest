@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppConfigModule } from './config/config.module';
 import { PostgresModule } from './database/postgres.module';
 import { MongoModule } from './database/mongo.module';
+import { UsersModule } from './users/users.module';
 import { LoggerModule } from 'pino-nestjs';
 import { AppConfigService } from './config/app-config.service';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
@@ -12,6 +13,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     AppConfigModule,
     PostgresModule,
     MongoModule,
+    UsersModule,
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [AppConfigService],

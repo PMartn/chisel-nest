@@ -9,26 +9,69 @@ import {
 import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
+import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection";
+import { ModulesConfigSection } from "./components/ModulesConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
-import type { GeneratorAnswers } from "../../index";
+import { initialFormState, type FormState } from "./formState";
+import { isFormValid } from "./validation";
+import { tokens } from "./theme";
+import type { GeneratorAnswers, CustomModule } from "../../shared/types";
 
 export default function App() {
-  const [projectName, setProjectName] = useState("my-nest-app");
-  const [destinationPath, setDestinationPath] = useState("");
-  const [includePostgres, setIncludePostgres] = useState(false);
-  const [postgresOrm, setPostgresOrm] = useState("TypeORM");
-  const [includeMongo, setIncludeMongo] = useState(false);
-  const [mongoOrm, setMongoOrm] = useState("Mongoose");
-  const [usePinoLogger, setUsePinoLogger] = useState(true);
-  const [useHelmet, setUseHelmet] = useState(true);
-  const [useRateLimiting, setUseRateLimiting] = useState(true);
+  const [config, setConfig] = useState<FormState>(initialFormState);
+  const update = (patch: Partial<FormState>) =>
+    setConfig((c) => ({ ...c, ...patch }));
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const formValid = isFormValid(config);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const {
+      projectName,
+      destinationPath,
+      includePostgres,
+      postgresOrm,
+      includeMongo,
+      mongoOrm,
+      includeUsersModule,
+      usersModuleLocation,
+      modules,
+      usePinoLogger,
+      useHelmet,
+      useRateLimiting,
+    } = config;
+
+    const anyDatabase = includePostgres || includeMongo;
+    let usersModuleDatabase: "postgres" | "mongo" | "none";
+    if (!anyDatabase || !includeUsersModule) {
+      usersModuleDatabase = "none";
+    } else if (includePostgres && includeMongo) {
+      usersModuleDatabase = usersModuleLocation;
+    } else {
+      usersModuleDatabase = includePostgres ? "postgres" : "mongo";
+    }
+
+    // Drop blank rows and pin each module to an enabled database. When only one
+    // database is active, every module goes there regardless of its stored value.
+    const effectiveModules: CustomModule[] = anyDatabase
+      ? modules
+          .filter((m) => m.name.trim())
+          .map((m) => ({
+            name: m.name.trim(),
+            database:
+              includePostgres && includeMongo
+                ? m.database
+                : includePostgres
+                  ? "postgres"
+                  : "mongo",
+          }))
+      : [];
 
     const payload: GeneratorAnswers = {
       projectName,
@@ -37,6 +80,8 @@ export default function App() {
       postgresOrm,
       mongoEnabled: includeMongo,
       mongoOrm,
+      usersModuleDatabase,
+      modules: effectiveModules,
       usePinoLogger,
       useHelmet,
       useRateLimiting,
@@ -55,7 +100,7 @@ export default function App() {
         const errorData = await response.json();
         alert(errorData.error || "Generation failed. Check backend logs.");
       }
-    } catch (err) {
+    } catch {
       alert("Generation failed. Check terminal log.");
     } finally {
       setLoading(false);
@@ -75,7 +120,7 @@ export default function App() {
         >
           🚀 Scaffold Complete!
         </Typography>
-        <Typography sx={{ color: "#94a3b8" }}>
+        <Typography sx={{ color: "text.secondary" }}>
           Your project has been successfully set up. You can close this tab and
           return to the terminal.
         </Typography>
@@ -89,11 +134,12 @@ export default function App() {
         sx={{
           marginTop: 6,
           padding: 4,
-          background: "#1e293b",
-          color: "#fff",
+          bgcolor: "background.paper",
+          color: "text.primary",
           borderRadius: 4,
           boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
-          border: "1px solid #334155",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography
@@ -101,11 +147,11 @@ export default function App() {
           component="h1"
           gutterBottom
           sx={{
-            color: "#818cf8",
+            color: "primary.main",
             fontWeight: "bold",
             textAlign: "center",
             mb: 3,
-            background: "linear-gradient(90deg, #818cf8 0%, #a78bfa 100%)",
+            background: tokens.gradients.title,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
@@ -119,50 +165,41 @@ export default function App() {
           sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}
         >
           <ProjectMetadataSection
-            projectName={projectName}
-            setProjectName={setProjectName}
-            destinationPath={destinationPath}
-            setDestinationPath={setDestinationPath}
+            config={config}
+            update={update}
             setPickerOpen={setPickerOpen}
           />
 
           <DirectoryBrowserModal
             open={pickerOpen}
             onClose={() => setPickerOpen(false)}
-            initialPath={destinationPath}
-            onSelect={(selected) => setDestinationPath(selected)}
+            initialPath={config.destinationPath}
+            onSelect={(selected) => update({ destinationPath: selected })}
           />
 
-          <DatabaseConfigSection
-            includePostgres={includePostgres}
-            setIncludePostgres={setIncludePostgres}
-            postgresOrm={postgresOrm}
-            setPostgresOrm={setPostgresOrm}
-            includeMongo={includeMongo}
-            setIncludeMongo={setIncludeMongo}
-            mongoOrm={mongoOrm}
-            setMongoOrm={setMongoOrm}
-          />
+          <DatabaseConfigSection config={config} update={update} />
 
-          <MiddlewareConfigSection
-            usePinoLogger={usePinoLogger}
-            setUsePinoLogger={setUsePinoLogger}
-            useHelmet={useHelmet}
-            setUseHelmet={setUseHelmet}
-            useRateLimiting={useRateLimiting}
-            setUseRateLimiting={setUseRateLimiting}
-          />
+          <UsersModuleConfigSection config={config} update={update} />
+
+          <ModulesConfigSection config={config} update={update} />
+
+          <MiddlewareConfigSection config={config} update={update} />
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formValid}
             variant="contained"
             size="large"
             sx={{
-              background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+              background: tokens.gradients.submit,
               color: "#fff",
               "&:hover": {
-                background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
+                background: tokens.gradients.submitHover,
+              },
+              "&:disabled": {
+                backgroundImage: "none",
+                bgcolor: "background.default",
+                color: "text.disabled",
               },
               padding: "12px",
               fontWeight: "bold",

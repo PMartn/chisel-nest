@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UserRepository } from './domain/ports/user-repository.port';
+import { UserServicePort } from './application/ports/user-service.port';
+import { UserService } from './application/user.service';
 import { UserEntity } from './infrastructure/persistence/postgres/user.entity';
 import { PostgresUserRepository } from './infrastructure/persistence/postgres/postgres-user.repository';
 import {
@@ -10,10 +12,16 @@ import {
   UserSchema,
 } from './infrastructure/persistence/mongo/user.schema';
 import { MongoUserRepository } from './infrastructure/persistence/mongo/mongo-user.repository';
+import { UsersController } from './infrastructure/http/users.controller';
 
 const UserRepositoryProvider: Provider = {
   provide: UserRepository,
   useClass: PostgresUserRepository,
+};
+
+const UserServiceProvider: Provider = {
+  provide: UserServicePort,
+  useClass: UserService,
 };
 
 @Module({
@@ -21,11 +29,13 @@ const UserRepositoryProvider: Provider = {
     TypeOrmModule.forFeature([UserEntity]),
     MongooseModule.forFeature([{ name: UserDoc.name, schema: UserSchema }]),
   ],
+  controllers: [UsersController],
   providers: [
     PostgresUserRepository,
     MongoUserRepository,
     UserRepositoryProvider,
+    UserServiceProvider,
   ],
-  exports: [UserRepository],
+  exports: [UserServicePort],
 })
 export class UsersModule {}

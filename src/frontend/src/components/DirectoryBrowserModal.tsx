@@ -17,19 +17,27 @@ import {
   Divider,
   Paper,
 } from "@mui/material";
-import {
-  FolderIcon,
-  HomeIcon,
-  DriveIcon,
-  ArrowUpIcon,
-  ProjectIcon,
-} from "./icons";
+import FolderIcon from "@mui/icons-material/Folder";
+import HomeIcon from "@mui/icons-material/Home";
+import StorageIcon from "@mui/icons-material/Storage";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import CodeIcon from "@mui/icons-material/Code";
+import { tokens } from "../theme";
 
 interface DirectoryBrowserProps {
   open: boolean;
   onClose: () => void;
   initialPath: string;
   onSelect: (path: string) => void;
+}
+
+interface BrowseResponse {
+  currentPath: string;
+  parentPath: string | null;
+  subdirectories: string[];
+  drives?: string[];
+  homeDir: string;
+  projectDir: string;
 }
 
 export default function DirectoryBrowserModal({
@@ -57,10 +65,10 @@ export default function DirectoryBrowserModal({
         `/api/browse?path=${encodeURIComponent(targetPath)}`,
       );
       if (!res.ok) {
-        const data = await res.json();
+        const data: { error?: string } = await res.json();
         throw new Error(data.error || "Failed to read directory");
       }
-      const data = await res.json();
+      const data: BrowseResponse = await res.json();
       setCurrentPath(data.currentPath);
       setPathInput(data.currentPath);
       setParentPath(data.parentPath);
@@ -68,8 +76,10 @@ export default function DirectoryBrowserModal({
       setDrives(data.drives || []);
       setHomeDir(data.homeDir);
       setProjectDir(data.projectDir);
-    } catch (err: any) {
-      setError(err.message || "Failed to read folder contents.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to read folder contents.",
+      );
     } finally {
       setLoading(false);
     }
@@ -122,18 +132,19 @@ export default function DirectoryBrowserModal({
       fullWidth
       sx={{
         "& .MuiDialog-paper": {
-          backgroundColor: "#0f172a",
-          color: "#fff",
+          backgroundColor: "background.default",
+          color: "text.primary",
           borderRadius: "16px",
-          border: "1px solid #334155",
+          border: "1px solid",
+          borderColor: "divider",
         },
       }}
     >
-      <DialogTitle sx={{ borderBottom: "1px solid #1e293b", pb: 2 }}>
+      <DialogTitle sx={{ borderBottom: 1, borderColor: "background.paper", pb: 2 }}>
         <Typography
           variant="h6"
           component="div"
-          sx={{ fontWeight: "bold", color: "#818cf8" }}
+          sx={{ fontWeight: "bold", color: "primary.main" }}
         >
           📂 Select Destination Directory
         </Typography>
@@ -147,28 +158,36 @@ export default function DirectoryBrowserModal({
             <Button
               size="small"
               variant="outlined"
+              startIcon={<HomeIcon />}
               onClick={() => fetchDirectory(homeDir)}
               sx={{
-                color: "#a78bfa",
-                borderColor: "#4c1d95",
-                "&:hover": { borderColor: "#c084fc", background: "#2e1065" },
+                color: tokens.nav.home.color,
+                borderColor: tokens.nav.home.border,
+                "&:hover": {
+                  borderColor: tokens.nav.home.hoverBorder,
+                  background: tokens.nav.home.hoverBg,
+                },
               }}
             >
-              <HomeIcon /> Home Folder
+              Home Folder
             </Button>
           )}
           {projectDir && (
             <Button
               size="small"
               variant="outlined"
+              startIcon={<CodeIcon />}
               onClick={() => fetchDirectory(projectDir)}
               sx={{
-                color: "#34d399",
-                borderColor: "#064e3b",
-                "&:hover": { borderColor: "#6ee7b7", background: "#022c22" },
+                color: tokens.nav.workspace.color,
+                borderColor: tokens.nav.workspace.border,
+                "&:hover": {
+                  borderColor: tokens.nav.workspace.hoverBorder,
+                  background: tokens.nav.workspace.hoverBg,
+                },
               }}
             >
-              <ProjectIcon /> Workspace
+              Workspace
             </Button>
           )}
           {drives.map((drive) => (
@@ -176,14 +195,18 @@ export default function DirectoryBrowserModal({
               key={drive}
               size="small"
               variant="outlined"
+              startIcon={<StorageIcon />}
               onClick={() => fetchDirectory(drive)}
               sx={{
-                color: "#60a5fa",
-                borderColor: "#1e3a8a",
-                "&:hover": { borderColor: "#93c5fd", background: "#172554" },
+                color: tokens.nav.drive.color,
+                borderColor: tokens.nav.drive.border,
+                "&:hover": {
+                  borderColor: tokens.nav.drive.hoverBorder,
+                  background: tokens.nav.drive.hoverBg,
+                },
               }}
             >
-              <DriveIcon /> {drive}
+              {drive}
             </Button>
           ))}
         </Box>
@@ -213,14 +236,14 @@ export default function DirectoryBrowserModal({
           <Button
             type="submit"
             variant="contained"
-            sx={{ bgcolor: "#4f46e5", "&:hover": { bgcolor: "#4338ca" } }}
+            sx={{ bgcolor: "primary.dark", "&:hover": { bgcolor: "#4338ca" } }}
           >
             Go
           </Button>
         </Box>
 
         {error && (
-          <Typography sx={{ color: "#ef4444", fontSize: "0.875rem", pl: 1 }}>
+          <Typography sx={{ color: "error.main", fontSize: "0.875rem", pl: 1 }}>
             ⚠️ {error}
           </Typography>
         )}
@@ -240,8 +263,8 @@ export default function DirectoryBrowserModal({
         <Paper
           variant="outlined"
           sx={{
-            bgcolor: "#0b0f19",
-            borderColor: "#1e293b",
+            bgcolor: tokens.surfaceSunken,
+            borderColor: "background.paper",
             borderRadius: 2,
             maxHeight: "320px",
             minHeight: "150px",
@@ -259,7 +282,7 @@ export default function DirectoryBrowserModal({
                 height: "150px",
               }}
             >
-              <CircularProgress size={30} sx={{ color: "#818cf8" }} />
+              <CircularProgress size={30} sx={{ color: "primary.main" }} />
             </Box>
           ) : (
             <List disablePadding>
@@ -267,14 +290,14 @@ export default function DirectoryBrowserModal({
                 <ListItem
                   disablePadding
                   divider
-                  sx={{ borderColor: "#1e293b" }}
+                  sx={{ borderColor: "background.paper" }}
                 >
                   <ListItemButton
                     onClick={handleNavigateUp}
-                    sx={{ color: "#94a3b8", py: 1 }}
+                    sx={{ color: "text.secondary", py: 1 }}
                   >
                     <ListItemIcon sx={{ minWidth: 32 }}>
-                      <ArrowUpIcon />
+                      <ArrowUpwardIcon sx={{ color: tokens.icon.up, fontSize: 20 }} />
                     </ListItemIcon>
                     <ListItemText
                       primary={<span style={{ fontWeight: "bold" }}>..</span>}
@@ -284,7 +307,7 @@ export default function DirectoryBrowserModal({
               )}
 
               {filteredDirectories.length === 0 ? (
-                <Box sx={{ p: 4, textAlign: "center", color: "#64748b" }}>
+                <Box sx={{ p: 4, textAlign: "center", color: "text.disabled" }}>
                   No directories found here.
                 </Box>
               ) : (
@@ -293,14 +316,14 @@ export default function DirectoryBrowserModal({
                     key={dir}
                     disablePadding
                     divider
-                    sx={{ borderColor: "#1e293b" }}
+                    sx={{ borderColor: "background.paper" }}
                   >
                     <ListItemButton
                       onClick={() => handleNavigate(dir)}
-                      sx={{ color: "#e2e8f0", py: 1 }}
+                      sx={{ color: "text.primary", py: 1 }}
                     >
                       <ListItemIcon sx={{ minWidth: 32 }}>
-                        <FolderIcon />
+                        <FolderIcon sx={{ color: tokens.icon.folder, fontSize: 22 }} />
                       </ListItemIcon>
                       <ListItemText primary={dir} />
                     </ListItemButton>
@@ -312,19 +335,19 @@ export default function DirectoryBrowserModal({
         </Paper>
       </DialogContent>
 
-      <Divider sx={{ borderColor: "#1e293b" }} />
+      <Divider sx={{ borderColor: "background.paper" }} />
 
       <DialogActions
         sx={{
           p: 2.5,
-          bgcolor: "#0b0f19",
+          bgcolor: tokens.surfaceSunken,
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
         }}
       >
         <Typography
           sx={{
-            color: "#64748b",
+            color: "text.disabled",
             mr: "auto",
             fontSize: "0.85rem",
             overflow: "hidden",
@@ -340,7 +363,7 @@ export default function DirectoryBrowserModal({
         </Typography>
         <Button
           onClick={onClose}
-          sx={{ color: "#94a3b8", "&:hover": { color: "#fff" } }}
+          sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
         >
           Cancel
         </Button>
@@ -349,11 +372,11 @@ export default function DirectoryBrowserModal({
           variant="contained"
           disabled={loading || !currentPath}
           sx={{
-            bgcolor: "#818cf8",
+            bgcolor: "primary.main",
             color: "#fff",
             fontWeight: "bold",
             "&:hover": { bgcolor: "#6366f1" },
-            "&:disabled": { bgcolor: "#1e293b", color: "#64748b" },
+            "&:disabled": { bgcolor: "background.paper", color: "text.disabled" },
           }}
         >
           Select Folder

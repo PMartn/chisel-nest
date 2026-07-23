@@ -32,4 +32,9 @@ export class MongoUserRepository implements UserRepository {
     const doc = await this.model.findOne({ email }).exec();
     return doc ? UserMapper.toDomain(doc) : null;
   }
+
+  async findAll(): Promise<User[]> {
+    const docs = await this.model.find().exec();
+    return docs.map((doc) => UserMapper.toDomain(doc));
+  }
 }

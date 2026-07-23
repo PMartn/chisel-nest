@@ -21,16 +21,20 @@ interface FormCardProps {
 export const FormCard = ({ title, children, gap = 2.5 }: FormCardProps) => (
   <Box
     sx={{
-      border: "1px solid #334155",
+      border: "1px solid",
+      borderColor: "divider",
       borderRadius: 2,
       p: 2.5,
-      bgcolor: "#0f172a",
+      bgcolor: "background.default",
       display: "flex",
       flexDirection: "column",
       gap,
     }}
   >
-    <Typography variant="subtitle1" sx={{ color: "#818cf8", fontWeight: "bold" }}>
+    <Typography
+      variant="subtitle1"
+      sx={{ color: "primary.main", fontWeight: "bold" }}
+    >
       {title}
     </Typography>
     {children}
@@ -66,16 +70,11 @@ export const StyledCheckbox = ({ label, checked, onChange, disabled = false }: S
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
-        sx={{
-          color: "#818cf8",
-          "&.Mui-checked": { color: "#818cf8" },
-          "&.Mui-disabled": { color: "#475569" },
-        }}
       />
     }
     label={label}
     sx={{
-      color: disabled ? "#64748b" : "#e2e8f0",
+      color: disabled ? "text.disabled" : "text.primary",
       m: 0,
       userSelect: "none",
     }}
@@ -101,7 +100,7 @@ export const StyledSelect = ({ label, value, onChange, options, disabled = false
 
   return (
     <FormControl fullWidth size="small" disabled={disabled}>
-      <InputLabel id={labelId} sx={{ color: "#94a3b8" }}>
+      <InputLabel id={labelId} sx={{ color: "text.secondary" }}>
         {label}
       </InputLabel>
       <Select
@@ -110,9 +109,11 @@ export const StyledSelect = ({ label, value, onChange, options, disabled = false
         label={label}
         onChange={(e) => onChange(e.target.value as string)}
         sx={{
-          color: disabled ? "#64748b" : "#fff",
-          backgroundColor: "#1e293b",
-          "& .MuiSvgIcon-root": { color: disabled ? "#475569" : "#fff" },
+          color: disabled ? "text.disabled" : "text.primary",
+          backgroundColor: "background.paper",
+          "& .MuiSvgIcon-root": {
+            color: disabled ? "text.disabled" : "text.primary",
+          },
         }}
       >
         {options.map((opt) => (
