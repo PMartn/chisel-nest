@@ -1,26 +1,41 @@
 import * as path from "path";
-import { fileURLToPath } from "url"; // Add this native import
+import { fileURLToPath } from "url";
 import fsExtra from "fs-extra";
 import { registerModuleWithApp } from "./utils/utils";
 
-// Recreate __dirname cleanly for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const { ensureDir, readFile, writeFile } = fsExtra;
 
-// ... rest of your code remains exactly the same ...
+function pluralize(word: string): string {
+  if (/[^aeiou]y$/i.test(word)) {
+    return word.slice(0, -1) + "ies";
+  }
+  if (/(s|x|z|ch|sh)$/i.test(word)) {
+    return word + "es";
+  }
+  return word + "s";
+}
 
 function getNames(name: string) {
-  const kebab = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const pascal = name.charAt(0).toUpperCase() + name.slice(1);
-  const camel = name.charAt(0).toLowerCase() + name.slice(1);
+  const words = name
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean);
+
+  const pascal = words
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join("");
+  const camel = pascal.charAt(0).toLowerCase() + pascal.slice(1);
+  const kebab = words.map((w) => w.toLowerCase()).join("-");
+
   return {
     kebab,
     pascal,
     camel,
-    pluralKebab: `${kebab}s`,
-    pluralPascal: `${pascal}s`,
+    pluralKebab: pluralize(kebab),
+    pluralPascal: pluralize(pascal),
   };
 }
 
@@ -57,9 +72,7 @@ export async function generateFeature(
     plural_pascal: names.pluralPascal,
   };
 
-  // 1. Shared core domain, application and http blueprint maps
   const fileMappings: Record<string, string> = {
-    // Domain layer
     [path.join(templateBase, "domain", "model.tmpl.ts")]: path.join(
       targetDir,
       "domain",
@@ -78,7 +91,6 @@ export async function generateFeature(
       "errors",
       `${names.kebab}-not-found.error.ts`,
     ),
-    // Application layer
     [path.join(templateBase, "application", "service.port.tmpl.ts")]: path.join(
       targetDir,
       "application",
@@ -138,7 +150,6 @@ export async function generateFeature(
     ),
   };
 
-  // 2. Database infrastructure layer map assignments
   if (database === "postgres") {
     fileMappings[
       path.join(
@@ -239,14 +250,12 @@ export async function generateFeature(
     );
   }
 
-  // 3. Sequential file processing compilation loop
   for (const [tmplPath, destPath] of Object.entries(fileMappings)) {
     const compiled = await compileTemplate(tmplPath, tokens);
     await ensureDir(path.dirname(destPath));
     await writeFile(destPath, compiled, "utf8");
   }
 
-  // 4. Connect the output structure cleanly back to your central core architecture
   await registerModuleWithApp(
     projectRoot,
     `${names.pluralPascal}Module`,

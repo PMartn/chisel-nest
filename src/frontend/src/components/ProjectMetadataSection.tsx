@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { StyledTextField } from "./FormControls";
+import { projectNameError } from "../validation";
 import type { FormState, UpdateForm } from "../formState";
 
 interface ProjectMetadataSectionProps {
@@ -12,7 +13,10 @@ export const ProjectMetadataSection = ({
   config,
   update,
   setPickerOpen,
-}: ProjectMetadataSectionProps) => (
+}: ProjectMetadataSectionProps) => {
+  const nameError = projectNameError(config.projectName);
+
+  return (
   <>
     <StyledTextField
       label="Project Name"
@@ -21,6 +25,8 @@ export const ProjectMetadataSection = ({
       onChange={(e) => update({ projectName: e.target.value })}
       fullWidth
       required
+      error={Boolean(nameError)}
+      helperText={nameError ?? undefined}
     />
 
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -51,4 +57,5 @@ export const ProjectMetadataSection = ({
       </Typography>
     </Box>
   </>
-);
+  );
+};

@@ -2,6 +2,7 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { FormCard, StyledTextField, StyledSelect } from "./FormControls";
+import { moduleNameError } from "../validation";
 import type { CustomModule } from "../../../shared/types";
 import type { FormState, UpdateForm } from "../formState";
 
@@ -47,51 +48,58 @@ export const ModulesConfigSection = ({
             </Typography>
           )}
 
-          {modules.map((module, index) => (
-            <Box
-              key={index}
-              sx={{ display: "flex", gap: 1, alignItems: "center" }}
-            >
-              <StyledTextField
-                label="Module Name"
-                variant="outlined"
-                size="small"
-                value={module.name}
-                onChange={(e) => updateModule(index, { name: e.target.value })}
-                fullWidth
-                placeholder="e.g. Product"
-              />
-
-              {bothEnabled && (
-                <Box sx={{ minWidth: 150 }}>
-                  <StyledSelect
-                    label="Database"
-                    value={module.database}
-                    onChange={(val) =>
-                      updateModule(index, {
-                        database: val as "postgres" | "mongo",
-                      })
-                    }
-                    options={[
-                      { value: "postgres", label: "PostgreSQL" },
-                      { value: "mongo", label: "MongoDB" },
-                    ]}
-                  />
-                </Box>
-              )}
-
-              <IconButton
-                aria-label="Remove module"
-                onClick={() => removeModule(index)}
-                sx={{
-                  color: "text.secondary",
-                  "&:hover": { color: "error.main" },
-                }}
+          {modules.map((module, index) => {
+            const nameErr = moduleNameError(module.name);
+            return (
+              <Box
+                key={index}
+                sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}
               >
-                <DeleteOutlineIcon />
-              </IconButton>
-            </Box>
-          ))}
+                <StyledTextField
+                  label="Module Name"
+                  variant="outlined"
+                  size="small"
+                  value={module.name}
+                  onChange={(e) => updateModule(index, { name: e.target.value })}
+                  fullWidth
+                  placeholder="e.g. Product"
+                  error={Boolean(nameErr)}
+                  helperText={nameErr ?? undefined}
+                />
+
+                {bothEnabled && (
+                  <Box sx={{ minWidth: 150 }}>
+                    <StyledSelect
+                      label="Database"
+                      value={module.database}
+                      onChange={(val) =>
+                        updateModule(index, {
+                          database: val as "postgres" | "mongo",
+                        })
+                      }
+                      options={[
+                        { value: "postgres", label: "PostgreSQL" },
+                        { value: "mongo", label: "MongoDB" },
+                      ]}
+                    />
+                  </Box>
+                )}
+
+                <IconButton
+                  aria-label="Remove module"
+                  size="small"
+                  onClick={() => removeModule(index)}
+                  sx={{
+                    mt: 0.5,
+                    color: "text.secondary",
+                    "&:hover": { color: "error.main" },
+                  }}
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </Box>
+            );
+          })}
 
           {!bothEnabled && modules.length > 0 && (
             <Typography variant="caption" sx={{ color: "text.secondary" }}>

@@ -13,6 +13,7 @@ import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection"
 import { ModulesConfigSection } from "./components/ModulesConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
 import { initialFormState, type FormState } from "./formState";
+import { isFormValid } from "./validation";
 import { tokens } from "./theme";
 import type { GeneratorAnswers, CustomModule } from "../../shared/types";
 
@@ -24,6 +25,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const formValid = isFormValid(config);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,7 +187,7 @@ export default function App() {
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formValid}
             variant="contained"
             size="large"
             sx={{
@@ -192,6 +195,11 @@ export default function App() {
               color: "#fff",
               "&:hover": {
                 background: tokens.gradients.submitHover,
+              },
+              "&:disabled": {
+                backgroundImage: "none",
+                bgcolor: "background.default",
+                color: "text.disabled",
               },
               padding: "12px",
               fontWeight: "bold",
