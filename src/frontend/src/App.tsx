@@ -10,9 +10,10 @@ import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
 import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection";
+import { ModulesConfigSection } from "./components/ModulesConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
 import { tokens } from "./theme";
-import type { GeneratorAnswers } from "../../index";
+import type { GeneratorAnswers, CustomModule } from "../../index";
 
 export default function App() {
   const [projectName, setProjectName] = useState("my-nest-app");
@@ -25,6 +26,7 @@ export default function App() {
   const [usersModuleLocation, setUsersModuleLocation] = useState<
     "postgres" | "mongo"
   >("postgres");
+  const [modules, setModules] = useState<CustomModule[]>([]);
   const [usePinoLogger, setUsePinoLogger] = useState(true);
   const [useHelmet, setUseHelmet] = useState(true);
   const [useRateLimiting, setUseRateLimiting] = useState(true);
@@ -46,6 +48,20 @@ export default function App() {
       usersModuleDatabase = includePostgres ? "postgres" : "mongo";
     }
 
+    const effectiveModules: CustomModule[] = anyDatabase
+      ? modules
+          .filter((m) => m.name.trim())
+          .map((m) => ({
+            name: m.name.trim(),
+            database:
+              includePostgres && includeMongo
+                ? m.database
+                : includePostgres
+                  ? "postgres"
+                  : "mongo",
+          }))
+      : [];
+
     const payload: GeneratorAnswers = {
       projectName,
       destinationPath: destinationPath.trim(),
@@ -54,6 +70,7 @@ export default function App() {
       mongoEnabled: includeMongo,
       mongoOrm,
       usersModuleDatabase,
+      modules: effectiveModules,
       usePinoLogger,
       useHelmet,
       useRateLimiting,
@@ -169,6 +186,13 @@ export default function App() {
             setIncludeUsersModule={setIncludeUsersModule}
             usersModuleLocation={usersModuleLocation}
             setUsersModuleLocation={setUsersModuleLocation}
+          />
+
+          <ModulesConfigSection
+            includePostgres={includePostgres}
+            includeMongo={includeMongo}
+            modules={modules}
+            setModules={setModules}
           />
 
           <MiddlewareConfigSection

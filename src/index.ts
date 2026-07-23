@@ -20,6 +20,11 @@ import { pruneMongoFromUsersModule } from "./tasks/prune-mongo-from-users-module
 import { pruneUsersModule } from "./tasks/prune-users-module";
 import { generateFeature } from "./tasks/generate-module";
 
+export interface CustomModule {
+  name: string;
+  database: "postgres" | "mongo";
+}
+
 export interface GeneratorAnswers {
   projectName: string;
   destinationPath: string;
@@ -28,6 +33,7 @@ export interface GeneratorAnswers {
   mongoEnabled: boolean;
   mongoOrm: string;
   usersModuleDatabase: "postgres" | "mongo" | "none";
+  modules: CustomModule[];
   usePinoLogger: boolean;
   useHelmet: boolean;
   useRateLimiting: boolean;
@@ -112,6 +118,7 @@ async function startWebServer() {
       mongoEnabled,
       //mongoOrm,
       usersModuleDatabase,
+      modules,
       usePinoLogger,
       useHelmet,
       useRateLimiting,
@@ -127,7 +134,6 @@ async function startWebServer() {
       const shouldRemoveConfigFromAppAppModule = !usePinoLogger;
 
       await updateSwaggerMetadata(targetPath, projectName);
-      // 1. Prune database infrastructure for any DB the user did not select.
       if (!postgresEnabled && !mongoEnabled) {
         await pruneDatabase(targetPath);
       } else if (!postgresEnabled) {
@@ -136,9 +142,6 @@ async function startWebServer() {
         await pruneMongoDatabase(targetPath);
       }
 
-      // 2. Place (or remove) the Users module based on the chosen target.
-      //    When kept, the module lives on exactly one database, so the other
-      //    database's persistence is stripped out of it.
       if (usersModuleDatabase === "none") {
         await pruneUsersModule(targetPath);
       } else if (usersModuleDatabase === "postgres") {
@@ -160,9 +163,14 @@ async function startWebServer() {
         await pruneConfigFromAppModule(targetPath);
       }
 
-      if (postgresEnabled || mongoEnabled) {
-        const featureDatabase = postgresEnabled ? "postgres" : "mongo";
-        await generateFeature(targetPath, "Product", featureDatabase);
+      // Generate each user-defined feature module on its chosen database.
+      for (const feature of modules) {
+        const name = feature.name.trim();
+        const dbEnabled =
+          feature.database === "postgres" ? postgresEnabled : mongoEnabled;
+        if (name && dbEnabled) {
+          await generateFeature(targetPath, name, feature.database);
+        }
       }
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
