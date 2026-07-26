@@ -19,6 +19,7 @@ import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-
 import { pruneMongoFromUsersModule } from "./tasks/prune-mongo-from-users-module";
 import { pruneUsersModule } from "./tasks/prune-users-module";
 import { generateFeature } from "./tasks/generate-module";
+import { generateReadme } from "./tasks/generate-readme";
 import type { GeneratorAnswers } from "./shared/types";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -154,6 +155,8 @@ async function startWebServer() {
           await generateFeature(targetPath, name, feature.database);
         }
       }
+
+      await generateReadme(targetPath, answers);
 
       console.log(`\n🎉 Project ${projectName} configured successfully!`);
       res.status(200).send({ message: "Success" });
