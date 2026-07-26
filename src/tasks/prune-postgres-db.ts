@@ -3,12 +3,12 @@ import { Project } from "ts-morph";
 import fsExtra from "fs-extra";
 import {
   pruneDependencies,
+  pruneScripts,
   pruneEnvKeys,
   pruneDockerCompose,
   removeImportBySpecifier,
   removeNestModuleImport,
   removePropertyAssignmentsByNames,
-  removeClassGetter,
 } from "./utils/utils";
 
 export async function prunePostgresDatabase(projectRoot: string) {
@@ -23,7 +23,19 @@ export async function prunePostgresDatabase(projectRoot: string) {
     "POSTGRES_DB",
   ];
 
-  await pruneDependencies(projectRoot, ["@nestjs/typeorm", "typeorm", "pg"]);
+  await pruneDependencies(projectRoot, [
+    "@nestjs/typeorm",
+    "typeorm",
+    "pg",
+    "dotenv",
+  ]);
+  await pruneScripts(projectRoot, [
+    "typeorm",
+    "migration:generate",
+    "migration:run",
+    "migration:revert",
+    "migration:create",
+  ]);
   await pruneEnvKeys(projectRoot, envKeys);
   await pruneDockerCompose(projectRoot, {
     services: ["postgres"],
@@ -33,7 +45,9 @@ export async function prunePostgresDatabase(projectRoot: string) {
   await fsExtra.remove(
     path.join(projectRoot, "src/database/postgres.module.ts"),
   );
-  console.log("  └─ Deleted postgres.module.ts");
+  await fsExtra.remove(path.join(projectRoot, "src/database/data-source.ts"));
+  await fsExtra.remove(path.join(projectRoot, "src/database/migrations"));
+  console.log("  └─ Deleted postgres.module.ts, data-source.ts and migrations/");
 
   const project = new Project();
 
@@ -54,11 +68,6 @@ export async function prunePostgresDatabase(projectRoot: string) {
     "POSTGRES_PASSWORD",
     "POSTGRES_DB",
   ]);
-
-  const configServiceFile = project.addSourceFileAtPath(
-    path.join(projectRoot, "src/config/app-config.service.ts"),
-  );
-  removeClassGetter(configServiceFile, "AppConfigService", "postgresUrl");
 
   await project.save();
   console.log("  └─ TS source files scrubbed of Postgres references.");

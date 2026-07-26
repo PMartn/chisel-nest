@@ -30,6 +30,21 @@ export async function pruneDependencies(
 }
 
 /**
+ * Removes a list of npm scripts from package.json
+ */
+export async function pruneScripts(projectRoot: string, scripts: string[]) {
+  const pkgPath = path.join(projectRoot, "package.json");
+  if (await pathExists(pkgPath)) {
+    const pkg = await readJson(pkgPath);
+    scripts.forEach((script) => {
+      delete pkg.scripts?.[script];
+    });
+    await writeJson(pkgPath, pkg, { spaces: 2 });
+    console.log(`  └─ Removed scripts: [${scripts.join(", ")}]`);
+  }
+}
+
+/**
  * Scrubs specific environment variable keys from both .env and .env.example
  */
 export async function pruneEnvKeys(projectRoot: string, keys: string[]) {

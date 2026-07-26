@@ -1,18 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppConfigService } from '../config/app-config.service';
+import { dataSourceOptions } from './data-source';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      inject: [AppConfigService],
-      useFactory: (configService: AppConfigService) => ({
-        type: 'postgres',
-        url: configService.postgresUrl,
-        autoLoadEntities: true,
-        synchronize: configService.isDevelopment,
-        logging: configService.isDevelopment,
-      }),
+    TypeOrmModule.forRoot({
+      ...dataSourceOptions,
+      // Apply any pending migrations on startup
+      migrationsRun: true,
     }),
   ],
 })

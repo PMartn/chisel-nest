@@ -3,6 +3,7 @@ import { Project } from "ts-morph";
 import fsExtra from "fs-extra";
 import {
   pruneDependencies,
+  pruneScripts,
   pruneEnvKeys,
   pruneDockerCompose,
   removeImportBySpecifier,
@@ -20,8 +21,16 @@ export async function pruneDatabase(projectRoot: string) {
     "@nestjs/typeorm",
     "typeorm",
     "pg",
+    "dotenv",
     "@nestjs/mongoose",
     "mongoose",
+  ]);
+  await pruneScripts(projectRoot, [
+    "typeorm",
+    "migration:generate",
+    "migration:run",
+    "migration:revert",
+    "migration:create",
   ]);
 
   const envKeys = [
@@ -65,7 +74,6 @@ export async function pruneDatabase(projectRoot: string) {
   const configServiceFile = project.addSourceFileAtPath(
     path.join(projectRoot, "src/config/app-config.service.ts"),
   );
-  removeClassGetter(configServiceFile, "AppConfigService", "postgresUrl");
   removeClassGetter(configServiceFile, "AppConfigService", "mongoUri");
 
   await project.save();

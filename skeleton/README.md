@@ -44,6 +44,25 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Database migrations (PostgreSQL)
+
+This project manages its PostgreSQL schema with TypeORM **migrations** instead of
+`synchronize`, so the schema is explicit, versioned, and safe for production.
+
+```bash
+# Generate a migration by diffing your entities against the database
+$ npm run migration:generate -- ./src/database/migrations/InitSchema
+
+# Apply pending migrations (also runs automatically on app startup)
+$ npm run migration:run
+
+# Revert the last applied migration
+$ npm run migration:revert
+```
+
+Migrations live in `src/database/migrations/`. The connection is configured once
+in `src/database/data-source.ts` and shared by both the app and the TypeORM CLI.
+
 ## Run tests
 
 ```bash
