@@ -21,6 +21,9 @@ export class UserDoc {
   @Prop({ type: [String], default: [] })
   roles!: Role[];
 
+  @Prop({ type: String, default: null })
+  hashedRefreshToken!: string | null;
+
   @Prop({ default: Date.now })
   createdAt!: Date;
 }

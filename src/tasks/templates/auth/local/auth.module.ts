@@ -17,7 +17,7 @@ import { RolesGuard } from './infrastructure/guards/roles.guard';
       secret: process.env.JWT_SECRET,
       signOptions: {
         expiresIn: (process.env.JWT_EXPIRES_IN ||
-          '1d') as JwtSignOptions['expiresIn'],
+          '1h') as JwtSignOptions['expiresIn'],
       },
     }),
   ],

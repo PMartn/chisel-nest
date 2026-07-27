@@ -18,6 +18,9 @@ export class UserEntity {
   @Column('simple-array')
   roles!: Role[];
 
+  @Column({ type: 'varchar', nullable: true })
+  hashedRefreshToken!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

@@ -8,6 +8,7 @@ export class User {
     public readonly name: string,
     public readonly passwordHash: string,
     public readonly roles: Role[],
+    public readonly hashedRefreshToken: string | null,
     public readonly createdAt: Date,
   ) {}
 
@@ -23,7 +24,20 @@ export class User {
       props.name,
       props.passwordHash ?? '',
       props.roles ?? [Role.USER],
+      null,
       new Date(),
+    );
+  }
+
+  withHashedRefreshToken(hashedRefreshToken: string | null): User {
+    return new User(
+      this.id,
+      this.email,
+      this.name,
+      this.passwordHash,
+      this.roles,
+      hashedRefreshToken,
+      this.createdAt,
     );
   }
 }

@@ -116,15 +116,20 @@ export async function generateReadme(
     sections.push(
       "## Authentication\n\n" +
         "Authentication uses **Local JWT** (email & password) with role-based access. " +
-        "Users have a `user` or `admin` role, and access control is **secure by default**. " +
+        "Users have a `user` or `admin` role, and access control is **secure by default** — " +
         "every route requires a valid bearer token except the ones below.\n\n" +
+        "Login and register return a short-lived **access token** plus a **refresh token**. " +
+        "The refresh token is stored hashed on the user; `POST /auth/refresh` rotates the pair, " +
+        "and `POST /auth/logout` revokes it.\n\n" +
         "| Endpoint | Description |\n| --- | --- |\n" +
-        "| `POST /auth/register` | Create an account, returns a JWT (public) |\n" +
-        "| `POST /auth/login` | Exchange credentials for a JWT (public) |\n" +
+        "| `POST /auth/register` | Create an account, returns a token pair (public) |\n" +
+        "| `POST /auth/login` | Exchange credentials for a token pair (public) |\n" +
+        "| `POST /auth/refresh` | Exchange a refresh token for a new pair (public) |\n" +
+        "| `POST /auth/logout` | Revoke the current refresh token |\n" +
         "| `GET /auth/me` | The current authenticated user |\n\n" +
         "Protect your own routes with the guards' decorators: `@Public()` to open a " +
         "route, `@Roles(Role.ADMIN)` to restrict one, and `@CurrentUser()` to read the " +
-        "principal. Set a strong `JWT_SECRET` before deploying.\n\n" +
+        "principal. Set strong `JWT_SECRET` / `JWT_REFRESH_SECRET` values before deploying.\n\n" +
         "In Swagger (`/docs`) protected endpoints show a lock. click **Authorize**, " +
         "paste a token from `/auth/login`, and try them out.",
     );
@@ -174,8 +179,10 @@ export async function generateReadme(
   }
   if (authEnabled) {
     envRows.push(
-      "| `JWT_SECRET` | Secret used to sign JWTs (change in production) |",
-      "| `JWT_EXPIRES_IN` | Token lifetime, e.g. `1d` |",
+      "| `JWT_SECRET` | Secret for signing access tokens (change in production) |",
+      "| `JWT_EXPIRES_IN` | Access token lifetime, e.g. `1h` |",
+      "| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens (change in production) |",
+      "| `JWT_REFRESH_EXPIRES_IN` | Refresh token lifetime, e.g. `7d` |",
     );
   }
   sections.push(

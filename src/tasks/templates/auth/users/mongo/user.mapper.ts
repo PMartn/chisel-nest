@@ -9,6 +9,7 @@ export class UserMapper {
       doc.name,
       doc.passwordHash,
       doc.roles,
+      doc.hashedRefreshToken,
       doc.createdAt,
     );
   }
@@ -20,6 +21,7 @@ export class UserMapper {
     doc.name = domain.name;
     doc.passwordHash = domain.passwordHash;
     doc.roles = domain.roles;
+    doc.hashedRefreshToken = domain.hashedRefreshToken;
     doc.createdAt = domain.createdAt;
     return doc;
   }

@@ -53,7 +53,15 @@ async function addJwtConfigValidation(projectRoot: string) {
     });
     joiObject.addPropertyAssignment({
       name: "JWT_EXPIRES_IN",
-      initializer: "Joi.string().default('1d')",
+      initializer: "Joi.string().default('1h')",
+    });
+    joiObject.addPropertyAssignment({
+      name: "JWT_REFRESH_SECRET",
+      initializer: "Joi.string().required()",
+    });
+    joiObject.addPropertyAssignment({
+      name: "JWT_REFRESH_EXPIRES_IN",
+      initializer: "Joi.string().default('7d')",
     });
     sourceFile.formatText();
     await project.save();
@@ -61,7 +69,7 @@ async function addJwtConfigValidation(projectRoot: string) {
 }
 
 // Public auth routes that should not require a token in Swagger.
-const PUBLIC_AUTH_ROUTES = ["/auth/login", "/auth/register"];
+const PUBLIC_AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/refresh"];
 
 /**
  * Marks the Swagger document as bearer-protected globally (so every endpoint
@@ -166,7 +174,9 @@ export async function generateAuth(
   );
   await addEnvKeys(projectRoot, {
     JWT_SECRET: "change_me_in_production",
-    JWT_EXPIRES_IN: "1d",
+    JWT_EXPIRES_IN: "1h",
+    JWT_REFRESH_SECRET: "change_me_too_in_production",
+    JWT_REFRESH_EXPIRES_IN: "7d",
   });
   await addJwtConfigValidation(projectRoot);
   await protectSwaggerWithBearer(projectRoot);
