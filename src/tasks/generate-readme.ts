@@ -116,7 +116,7 @@ export async function generateReadme(
     sections.push(
       "## Authentication\n\n" +
         "Authentication uses **Local JWT** (email & password) with role-based access. " +
-        "Users have a `user` or `admin` role, and access control is **secure by default** — " +
+        "Users have a `user` or `admin` role, and access control is **secure by default**. " +
         "every route requires a valid bearer token except the ones below.\n\n" +
         "| Endpoint | Description |\n| --- | --- |\n" +
         "| `POST /auth/register` | Create an account, returns a JWT (public) |\n" +
@@ -124,7 +124,9 @@ export async function generateReadme(
         "| `GET /auth/me` | The current authenticated user |\n\n" +
         "Protect your own routes with the guards' decorators: `@Public()` to open a " +
         "route, `@Roles(Role.ADMIN)` to restrict one, and `@CurrentUser()` to read the " +
-        "principal. Set a strong `JWT_SECRET` before deploying.",
+        "principal. Set a strong `JWT_SECRET` before deploying.\n\n" +
+        "In Swagger (`/docs`) protected endpoints show a lock. click **Authorize**, " +
+        "paste a token from `/auth/login`, and try them out.",
     );
   }
 

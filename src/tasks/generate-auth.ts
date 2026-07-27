@@ -60,6 +60,58 @@ async function addJwtConfigValidation(projectRoot: string) {
   }
 }
 
+// Public auth routes that should not require a token in Swagger.
+const PUBLIC_AUTH_ROUTES = ["/auth/login", "/auth/register"];
+
+/**
+ * Marks the Swagger document as bearer-protected globally (so every endpoint
+ * shows a lock and sends the "Authorize" token), then exempts the public auth
+ * routes so they don't appear to require a token.
+ */
+async function protectSwaggerWithBearer(projectRoot: string) {
+  const project = new Project();
+  const sourceFile = project.addSourceFileAtPath(
+    path.join(projectRoot, "src/main.ts"),
+  );
+
+  if (sourceFile.getText().includes("addSecurityRequirements")) return;
+
+  const routes = JSON.stringify(PUBLIC_AUTH_ROUTES);
+  const documentFactory = sourceFile
+    .getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+    .find((declaration) => declaration.getName() === "documentFactory");
+  if (documentFactory) {
+    documentFactory.setInitializer(`() => {
+    const document = SwaggerModule.createDocument(app, config);
+    for (const route of ${routes}) {
+      const operation = document.paths[route]?.post;
+      if (operation) {
+        operation.security = [];
+      }
+    }
+    return document;
+  }`);
+  }
+
+  const addBearerCall = sourceFile
+    .getDescendantsOfKind(SyntaxKind.CallExpression)
+    .find(
+      (call) =>
+        call
+          .getExpression()
+          .asKind(SyntaxKind.PropertyAccessExpression)
+          ?.getName() === "addBearerAuth",
+    );
+  if (addBearerCall) {
+    addBearerCall.replaceWithText(
+      `${addBearerCall.getText()}.addSecurityRequirements('bearer')`,
+    );
+  }
+
+  sourceFile.formatText();
+  await project.save();
+}
+
 /**
  * Provisions authentication + role-based access. Copies the shared auth
  * infrastructure and the chosen provider's adapter, upgrades the Users module's
@@ -117,6 +169,7 @@ export async function generateAuth(
     JWT_EXPIRES_IN: "1d",
   });
   await addJwtConfigValidation(projectRoot);
+  await protectSwaggerWithBearer(projectRoot);
 
   console.log(`  └─ Authentication provisioned with global role guards.`);
 }
