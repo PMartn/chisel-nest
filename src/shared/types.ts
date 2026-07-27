@@ -3,6 +3,8 @@ export interface CustomModule {
   database: "postgres" | "mongo";
 }
 
+export type AuthProvider = "none" | "local" | "auth0" | "keycloak" | "clerk";
+
 export interface GeneratorAnswers {
   projectName: string;
   destinationPath: string;
@@ -11,6 +13,7 @@ export interface GeneratorAnswers {
   mongoEnabled: boolean;
   mongoOrm: string;
   usersModuleDatabase: "postgres" | "mongo" | "none";
+  authProvider: AuthProvider;
   modules: CustomModule[];
   usePinoLogger: boolean;
   useHelmet: boolean;

@@ -9,6 +9,7 @@ export interface FormState {
   mongoOrm: string;
   includeUsersModule: boolean;
   usersModuleLocation: "postgres" | "mongo";
+  includeAuth: boolean;
   modules: CustomModule[];
   usePinoLogger: boolean;
   useHelmet: boolean;
@@ -24,6 +25,7 @@ export const initialFormState: FormState = {
   mongoOrm: "Mongoose",
   includeUsersModule: true,
   usersModuleLocation: "postgres",
+  includeAuth: false,
   modules: [],
   usePinoLogger: true,
   useHelmet: true,

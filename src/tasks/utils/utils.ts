@@ -29,6 +29,64 @@ export async function pruneDependencies(
   }
 }
 
+function sortObjectKeys(obj: Record<string, string>): Record<string, string> {
+  return Object.keys(obj)
+    .sort()
+    .reduce<Record<string, string>>((acc, key) => {
+      acc[key] = obj[key]!;
+      return acc;
+    }, {});
+}
+
+/**
+ * Adds dependencies (and optional devDependencies) to package.json, keeping
+ * each block alphabetically sorted.
+ */
+export async function addDependencies(
+  projectRoot: string,
+  dependencies: Record<string, string>,
+  devDependencies: Record<string, string> = {},
+) {
+  const pkgPath = path.join(projectRoot, "package.json");
+  if (await pathExists(pkgPath)) {
+    const pkg = await readJson(pkgPath);
+    pkg.dependencies = sortObjectKeys({ ...pkg.dependencies, ...dependencies });
+    if (Object.keys(devDependencies).length > 0) {
+      pkg.devDependencies = sortObjectKeys({
+        ...pkg.devDependencies,
+        ...devDependencies,
+      });
+    }
+    await writeJson(pkgPath, pkg, { spaces: 2 });
+    console.log(
+      `  └─ Added dependencies: [${Object.keys({
+        ...dependencies,
+        ...devDependencies,
+      }).join(", ")}]`,
+    );
+  }
+}
+
+/**
+ * Appends environment variables to both .env and .env.example.
+ */
+export async function addEnvKeys(
+  projectRoot: string,
+  keys: Record<string, string>,
+) {
+  const block = Object.entries(keys)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+  for (const file of [".env", ".env.example"]) {
+    const envPath = path.join(projectRoot, file);
+    if (await pathExists(envPath)) {
+      const current = (await readFile(envPath, "utf8")).replace(/\s*$/, "");
+      await writeFile(envPath, `${current}\n\n${block}\n`, "utf8");
+    }
+  }
+  console.log(`  └─ Added env keys: [${Object.keys(keys).join(", ")}]`);
+}
+
 /**
  * Removes a list of npm scripts from package.json
  */
@@ -207,6 +265,31 @@ export function removeElementFromDecoratorArray(
 
   if (elementToRemove) {
     array?.removeElement(elementToRemove);
+  }
+}
+
+/**
+ * Adds an element to a specific array property of a NestJS class decorator,
+ * skipping it if an identical element is already present.
+ */
+export function addElementToDecoratorArray(
+  decoratorArgs: ObjectLiteralExpression,
+  propertyName: "imports" | "providers" | "controllers" | "exports",
+  element: string,
+): void {
+  const prop = decoratorArgs
+    .getProperty(propertyName)
+    ?.asKindOrThrow(SyntaxKind.PropertyAssignment);
+  const array = prop
+    ?.getInitializer()
+    ?.asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+  if (!array) return;
+
+  const alreadyPresent = array
+    .getElements()
+    .some((el) => el.getText() === element);
+  if (!alreadyPresent) {
+    array.addElement(element);
   }
 }
 

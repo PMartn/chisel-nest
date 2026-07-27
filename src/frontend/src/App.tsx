@@ -10,6 +10,7 @@ import DirectoryBrowserModal from "./components/DirectoryBrowserModal";
 import { ProjectMetadataSection } from "./components/ProjectMetadataSection";
 import { DatabaseConfigSection } from "./components/DatabaseConfigSection";
 import { UsersModuleConfigSection } from "./components/UsersModuleConfigSection";
+import { AuthConfigSection } from "./components/AuthConfigSection";
 import { ModulesConfigSection } from "./components/ModulesConfigSection";
 import { MiddlewareConfigSection } from "./components/MiddlewareConfigSection";
 import { initialFormState, type FormState } from "./formState";
@@ -41,6 +42,7 @@ export default function App() {
       mongoOrm,
       includeUsersModule,
       usersModuleLocation,
+      includeAuth,
       modules,
       usePinoLogger,
       useHelmet,
@@ -73,6 +75,9 @@ export default function App() {
           }))
       : [];
 
+    const authProvider =
+      usersModuleDatabase !== "none" && includeAuth ? "local" : "none";
+
     const payload: GeneratorAnswers = {
       projectName,
       destinationPath: destinationPath.trim(),
@@ -81,6 +86,7 @@ export default function App() {
       mongoEnabled: includeMongo,
       mongoOrm,
       usersModuleDatabase,
+      authProvider,
       modules: effectiveModules,
       usePinoLogger,
       useHelmet,
@@ -180,6 +186,8 @@ export default function App() {
           <DatabaseConfigSection config={config} update={update} />
 
           <UsersModuleConfigSection config={config} update={update} />
+
+          <AuthConfigSection config={config} update={update} />
 
           <ModulesConfigSection config={config} update={update} />
 

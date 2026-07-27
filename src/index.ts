@@ -19,6 +19,7 @@ import { prunePostgresFromUsersModule } from "./tasks/prune-postgres-from-users-
 import { pruneMongoFromUsersModule } from "./tasks/prune-mongo-from-users-module";
 import { pruneUsersModule } from "./tasks/prune-users-module";
 import { generateFeature } from "./tasks/generate-module";
+import { generateAuth } from "./tasks/generate-auth";
 import { generateReadme } from "./tasks/generate-readme";
 import type { GeneratorAnswers } from "./shared/types";
 
@@ -101,6 +102,7 @@ async function startWebServer() {
       mongoEnabled,
       //mongoOrm,
       usersModuleDatabase,
+      authProvider,
       modules,
       usePinoLogger,
       useHelmet,
@@ -146,7 +148,6 @@ async function startWebServer() {
         await pruneConfigFromAppModule(targetPath);
       }
 
-      // Generate each user-defined feature module on its chosen database.
       for (const feature of modules) {
         const name = feature.name.trim();
         const dbEnabled =
@@ -154,6 +155,10 @@ async function startWebServer() {
         if (name && dbEnabled) {
           await generateFeature(targetPath, name, feature.database);
         }
+      }
+
+      if (authProvider !== "none" && usersModuleDatabase !== "none") {
+        await generateAuth(targetPath, authProvider, usersModuleDatabase);
       }
 
       await generateReadme(targetPath, answers);

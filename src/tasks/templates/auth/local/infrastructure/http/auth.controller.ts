@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from '../../application/auth.service';
-import { AuthenticatedUser } from '../../domain/authenticated-user';
+import type { AuthenticatedUser } from '../../domain/authenticated-user';
 import { Public } from '../decorators/public.decorator';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { LoginRequestDto } from './dto/login.dto';

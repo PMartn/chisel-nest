@@ -20,6 +20,7 @@ export async function generateReadme(
     postgresEnabled,
     mongoEnabled,
     usersModuleDatabase,
+    authProvider,
     modules,
     usePinoLogger,
     useHelmet,
@@ -28,6 +29,7 @@ export async function generateReadme(
 
   const anyDatabase = postgresEnabled || mongoEnabled;
   const bothDatabases = postgresEnabled && mongoEnabled;
+  const authEnabled = authProvider !== "none";
   const featureModules = modules.filter((m) => m.name.trim());
   const hasModules = usersModuleDatabase !== "none" || featureModules.length > 0;
 
@@ -48,6 +50,9 @@ export async function generateReadme(
   features.push("Interactive API documentation with **Swagger**");
   features.push("Request validation with **class-validator**");
   features.push("Environment validation with **Joi**");
+  if (authEnabled) {
+    features.push("Authentication & role-based access (**Local JWT**)");
+  }
   if (usePinoLogger) features.push("Structured logging with **Pino**");
   if (useHelmet) features.push("Secure HTTP headers via **Helmet**");
   if (useRateLimiting) features.push("Rate limiting");
@@ -107,6 +112,22 @@ export async function generateReadme(
     sections.push(`## Modules\n\n${parts.join("\n\n")}`);
   }
 
+  if (authEnabled) {
+    sections.push(
+      "## Authentication\n\n" +
+        "Authentication uses **Local JWT** (email & password) with role-based access. " +
+        "Users have a `user` or `admin` role, and access control is **secure by default** — " +
+        "every route requires a valid bearer token except the ones below.\n\n" +
+        "| Endpoint | Description |\n| --- | --- |\n" +
+        "| `POST /auth/register` | Create an account, returns a JWT (public) |\n" +
+        "| `POST /auth/login` | Exchange credentials for a JWT (public) |\n" +
+        "| `GET /auth/me` | The current authenticated user |\n\n" +
+        "Protect your own routes with the guards' decorators: `@Public()` to open a " +
+        "route, `@Roles(Role.ADMIN)` to restrict one, and `@CurrentUser()` to read the " +
+        "principal. Set a strong `JWT_SECRET` before deploying.",
+    );
+  }
+
   if (anyDatabase) {
     const parts: string[] = [];
     if (postgresEnabled) {
@@ -147,6 +168,12 @@ export async function generateReadme(
       "| `MONGO_ROOT_USER` | MongoDB user |",
       "| `MONGO_ROOT_PASSWORD` | MongoDB password |",
       "| `MONGO_DB` | MongoDB database name |",
+    );
+  }
+  if (authEnabled) {
+    envRows.push(
+      "| `JWT_SECRET` | Secret used to sign JWTs (change in production) |",
+      "| `JWT_EXPIRES_IN` | Token lifetime, e.g. `1d` |",
     );
   }
   sections.push(
